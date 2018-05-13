@@ -1,0 +1,15 @@
+{%for d in dirs%}
+<a href="{{d.pk}}/">{{d.name}}</a>
+{%endfor%}
+
+<form action="new_file/" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ upload_form }}
+    <input type="submit" value="Submit" />
+</form>
+
+<form action="new_folder/" method="post">
+    {% csrf_token %}
+    {{ dir_form }}
+    <input type="submit" value="Submit" />
+</form>
