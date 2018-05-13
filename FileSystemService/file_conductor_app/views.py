@@ -5,5 +5,5 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
 def index(request):
-    return HttpResponse("Hello, world.")
+    return render(request, 'file_conductor_app/base.html')
 # Create your views here.
