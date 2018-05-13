@@ -31,7 +31,7 @@ class File(models.Model):
 	parent = models.ForeignKey(Directory)
 	path = models.CharField(max_length=100)
 	internal_name = models.CharField(max_length=30)
-	name = models.CharField(max_length = 30, default="Unknown")
+	name = models.CharField(max_length = 30)
 	creation_date = models.DateTimeField(default = timezone.now)
 	last_upd = models.DateTimeField(default = timezone.now)
 	upd_type = models.CharField(max_length=30, default="")
