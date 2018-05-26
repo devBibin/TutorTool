@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
 
+
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
@@ -13,18 +14,15 @@ from .forms import UploadFileForm, FolderNameForm
 from django.utils import timezone
 
 from models import *
+from utils import *
 
 FILE_SYSTEM_URL = "http://localhost:8000/"
 
-def handle_uploaded_file(f, path):
-    cur_time = timezone.now()
-    with open(path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
 
 def index(request):
     print user_auth(request)
     return render(request, 'file_conductor_app/base.html')
+
 
 def create_repo(request):
     username = None
@@ -54,16 +52,6 @@ def get_dir(request, folder_id=None, message=None):
          "upload_form" : upload_form,
          "dir_form" : dir_form,
          "message" : message})
-
-
-def define_parent(parent_id):
-    try:
-        parent = Directory.objects.get(pk = parent_id)
-        parent_str = str(parent_id)
-    except:
-        parent = None
-        parent_str = ""    
-    return parent, parent_str
 
 
 def create_folder(request, parent_id=None):
@@ -108,13 +96,7 @@ def upload_file(request, parent_id=None):
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
 
 
-
-
-
-
-
-
-def auth(request):
+def user_auth(request):
     username = "xxx"
     password = "000"
     user = auth.authenticate(username=username, password=password)
