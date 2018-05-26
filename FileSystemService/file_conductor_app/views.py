@@ -25,25 +25,38 @@ def index(request):
 
 
 def create_repo(request):
-    username = None
-    if request.user.is_authenticated():
-        user = request.user
+    # Get current user
+    user = request.user
+    
+    # Create filesystem
     fs = FileSystem.objects.create(master = user)
+    
+    # Create service's directories
     Directory.objects.create(file_system=fs, name="Temp", is_editable=False)
+
     return HttpResponse("Created for " + str(user.username))
 
 
 def get_dir(request, folder_id=None, message=None):
+    # Get current user
     user = request.user
 
+    # Get all info about current directory in current filesystem
     fs = FileSystem.objects.get(master= user)
     dirs = Directory.objects.filter(file_system=fs, parent=folder_id)
     files = File.objects.filter(file_system=fs, parent=folder_id)
     tests = Test.objects.filter(file_system=fs, parent=folder_id)
     questions = Question.objects.filter(file_system=fs, parent=folder_id)
     
+    # Set folder id as empty if user is in root
+    if (not folder_id):
+        folder_id = ""
+    
+    # Get forms
     upload_form = UploadFileForm()
     dir_form = FolderNameForm()
+    
+    # Return result
     return render(request, "file_conductor_app/file_system.html", 
         {"dirs" : dirs,
          "files" : files,
@@ -51,7 +64,8 @@ def get_dir(request, folder_id=None, message=None):
          "questions": questions,
          "upload_form" : upload_form,
          "dir_form" : dir_form,
-         "message" : message})
+         "message" : message,
+         "folder_id" : folder_id})
 
 
 def create_folder(request, parent_id=None):
