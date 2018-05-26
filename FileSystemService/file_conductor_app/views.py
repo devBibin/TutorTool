@@ -6,13 +6,12 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils import timezone
-    
-from .forms import UploadFileForm, FolderNameForm
+from django.conf import settings
+
 from models import *
 from utils import *
 
 import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 FILE_SYSTEM_URL = "http://localhost:8000/"
 
@@ -34,20 +33,22 @@ def create_repo(request):
     return HttpResponse("Created for " + str(user.username))
 
 
-def get_dir(request, folder_id=None, message=None):
+def get_folder(request, folder_id=None):
     # Get current user
     user = request.user
 
     # Get all info about current directory in current filesystem
     fs = FileSystem.objects.get(master= user)
-    dirs = Directory.objects.filter(file_system=fs, parent=folder_id)
-    files = File.objects.filter(file_system=fs, parent=folder_id)
-    tests = Test.objects.filter(file_system=fs, parent=folder_id)
-    questions = Question.objects.filter(file_system=fs, parent=folder_id)
+    dirs = Directory.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
+    files = File.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
+    tests = Test.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
+    questions = Question.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
     
-    # Get forms
-    upload_form = UploadFileForm()
-    dir_form = FolderNameForm()
+    # Get parent directory
+    try:
+        master = Directory.objects.get(pk=folder_id)
+    except:
+        master = None
     
     # Return result
     return render(request, "file_conductor_app/file_system.html", 
@@ -55,9 +56,7 @@ def get_dir(request, folder_id=None, message=None):
          "files" : files,
          "tests" : tests,
          "questions": questions,
-         "upload_form" : upload_form,
-         "dir_form" : dir_form,
-         "message" : message,
+         "master": master,
          })
 
 
@@ -69,50 +68,88 @@ def create_folder(request, parent_id=None):
         user = request.user
         # Get filesystem of user
         fs = FileSystem.objects.get(master= user)
-        # Get form
-        form = FolderNameForm(request.POST)
-        if form.is_valid():
-            Directory.objects.create(file_system=fs, parent=parent, name = form.cleaned_data["name"])
-            return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
-        else:
-            return HttpResponse("Form is invalid", 400)
+        # Get folder name
+        name = request.POST["name"]
+        # Create folder
+        Directory.objects.create(file_system=fs, parent=parent, name = name)
+        
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+
+
+def remove_folder(request, id):
+    # Get current user
+    user = request.user
+
+    # Get and set deleted flag
+    d = Directory.objects.get(pk=id)
+    d.is_deleted = True
+    d.save()
+
+    # Get current folder
+    parent, parent_str = define_parent(d.parent_id)
+    
+    # Return result
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
 
 
 def upload_file(request, parent_id=None):
     # Get parent directory
     parent, parent_str = define_parent(parent_id)
-
     if request.method == 'POST':
         # Get user
         user = request.user
+
+        # Get filename
+        filename = request.FILES['file'].name
         
         # Get filesystem
         fs = FileSystem.objects.get(master=user)
         
-        # Get upload file form
-        form = UploadFileForm(request.POST, request.FILES)
+        # Set path for teachers repository
+        path = os.path.join(settings.BASE_DIR + "/../teachers_repositories/", filename)
+        try:
+            # Create folder if not exist
+            os.mkdir(path)
+        except:
+            pass
+
+        # Uploading to harddrive
+        handle_uploaded_file(request.FILES['file'], path + str("/") + filename)
         
-        if form.is_valid():
-            # Set path for teachers repository
-            path = os.path.join(BASE_DIR + "/../teachers_repositories/", str(user.pk) +"_"+str(user.username))
-            try:
-                # Create folder if not exist
-                os.mkdir(path)
-            except:
-                pass
-            
-            # Uploading to harddrive
-            handle_uploaded_file(request.FILES['file'], path + str("/") + str(user.username) +"_"+ timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
-            
-            # Create file object
-            File.objects.create(file_system = fs,
-                name=form.cleaned_data["name"], 
-                parent=parent, 
-                path=path, 
-                internal_name = str(user.username) +"_"+ timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
-            return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
-        else:
-            return HttpResponse("Form is invalid", 400)
+        # Create file object
+        File.objects.create(file_system = fs,
+            name=filename, 
+            parent=parent, 
+            path=path, 
+            )
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+
+
+def download_file(request, id):
+    f_obj = File.objects.get(pk=id)
+    file_path = f_obj.path + "/" + f_obj.name
+    print file_path
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
+
+
+def remove_file(request, id):
+    # Get current user
+    user = request.user
+
+    # Get and set deleted flag
+    f = File.objects.get(pk=id)
+    f.is_deleted = True
+    f.save()
+
+    parent, parent_str = define_parent(f.parent_id)
+    
+    # Return result
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
 
 
 def user_auth(request):
