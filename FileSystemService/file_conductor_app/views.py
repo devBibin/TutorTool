@@ -5,19 +5,16 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
-
-
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from django.utils import timezone
     
 from .forms import UploadFileForm, FolderNameForm
-from django.utils import timezone
-
 from models import *
 from utils import *
 
-FILE_SYSTEM_URL = "http://localhost:8000/"
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+FILE_SYSTEM_URL = "http://localhost:8000/"
 
 def index(request):
     print user_auth(request)
@@ -48,10 +45,6 @@ def get_dir(request, folder_id=None, message=None):
     tests = Test.objects.filter(file_system=fs, parent=folder_id)
     questions = Question.objects.filter(file_system=fs, parent=folder_id)
     
-    # Set folder id as empty if user is in root
-    if (not folder_id):
-        folder_id = ""
-    
     # Get forms
     upload_form = UploadFileForm()
     dir_form = FolderNameForm()
@@ -65,39 +58,53 @@ def get_dir(request, folder_id=None, message=None):
          "upload_form" : upload_form,
          "dir_form" : dir_form,
          "message" : message,
-         "folder_id" : folder_id})
+         })
 
 
 def create_folder(request, parent_id=None):
+    # Get parent folder
     parent, parent_str = define_parent(parent_id)
     if (request.method == "POST"):
+        # Get user
         user = request.user
+        # Get filesystem of user
         fs = FileSystem.objects.get(master= user)
-        form = FolderNameForm(request.POST) # A form bound to the POST data
+        # Get form
+        form = FolderNameForm(request.POST)
         if form.is_valid():
             Directory.objects.create(file_system=fs, parent=parent, name = form.cleaned_data["name"])
             return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
         else:
             return HttpResponse("Form is invalid", 400)
-    else:
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
 
 
 def upload_file(request, parent_id=None):
+    # Get parent directory
     parent, parent_str = define_parent(parent_id)
 
     if request.method == 'POST':
+        # Get user
         user = request.user
+        
+        # Get filesystem
         fs = FileSystem.objects.get(master=user)
+        
+        # Get upload file form
         form = UploadFileForm(request.POST, request.FILES)
         
         if form.is_valid():
+            # Set path for teachers repository
             path = os.path.join(BASE_DIR + "/../teachers_repositories/", str(user.pk) +"_"+str(user.username))
             try:
+                # Create folder if not exist
                 os.mkdir(path)
             except:
-                pass    
+                pass
+            
+            # Uploading to harddrive
             handle_uploaded_file(request.FILES['file'], path + str("/") + str(user.username) +"_"+ timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
+            
+            # Create file object
             File.objects.create(file_system = fs,
                 name=form.cleaned_data["name"], 
                 parent=parent, 
@@ -106,8 +113,6 @@ def upload_file(request, parent_id=None):
             return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
         else:
             return HttpResponse("Form is invalid", 400)
-    else:
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
 
 
 def user_auth(request):

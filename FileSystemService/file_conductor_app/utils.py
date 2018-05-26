@@ -1,5 +1,8 @@
 from django.utils import timezone
 
+from models import *
+
+
 def handle_uploaded_file(f, path):
     cur_time = timezone.now()
     with open(path, 'wb+') as destination:
