@@ -28,7 +28,7 @@ class Directory(models.Model):
 
 class File(models.Model):
 	file_system = models.ForeignKey(FileSystem)
-	parent = models.ForeignKey(Directory)
+	parent = models.ForeignKey(Directory, null=True, default=None)
 	path = models.CharField(max_length=100)
 	internal_name = models.CharField(max_length=30)
 	name = models.CharField(max_length = 30)
@@ -42,8 +42,8 @@ class File(models.Model):
 
 
 class Test(models.Model):
-	file_system = models.ForeignKey(FileSystem)
-	parent = models.ForeignKey(Directory)
+	file_system = models.ForeignKey(FileSystem, )
+	parent = models.ForeignKey(Directory, null=True, default=None)
 	name = models.CharField(max_length = 30, default="Unknown")
 	creation_date = models.DateTimeField(default = timezone.now)
 	last_upd = models.DateTimeField(default = timezone.now)
@@ -54,7 +54,7 @@ class Test(models.Model):
 
 class Question(models.Model):
 	file_system = models.ForeignKey(FileSystem)
-	parent = models.ForeignKey(Directory)
+	parent = models.ForeignKey(Directory, null=True, default=None)
 	name = models.CharField(max_length = 30, default="Unknown")
 	creation_date = models.DateTimeField(default = timezone.now)
 	last_upd = models.DateTimeField(default = timezone.now)
