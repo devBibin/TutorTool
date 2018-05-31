@@ -7,7 +7,11 @@
 
 
 {%for d in dirs%}
-<a href="/file-system/{{d.pk}}/">{{d.name}}</a>|||<a href="/file-system/{{d.id}}/remove_folder/">delete</a><br>
+<a href="/file-system/{{d.pk}}/">{{d.name}}</a>
+{%if d.can_be_deleted == True%}
+|||<a href="/file-system/{{d.id}}/remove_folder/">delete</a>
+{%endif%}
+<br>
 {%endfor%}
 
 <hr>

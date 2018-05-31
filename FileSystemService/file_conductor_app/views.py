@@ -28,7 +28,10 @@ def create_repo(request):
     fs = FileSystem.objects.create(master = user)
     
     # Create service's directories
-    Directory.objects.create(file_system=fs, name="Temp", is_editable=False)
+    Directory.objects.create(file_system=fs, 
+        name="Temp", 
+        is_editable=False, 
+        can_be_deleted=False)
 
     return HttpResponse("Created for " + str(user.username))
 
@@ -106,7 +109,7 @@ def upload_file(request, parent_id=None):
         fs = FileSystem.objects.get(master=user)
         
         # Set path for teachers repository
-        path = os.path.join(settings.BASE_DIR + "/../teachers_repositories/", filename)
+        path = os.path.join(settings.BASE_DIR + "/../teachers_repositories/", str(str(user.pk)+"_"+str(user.username)))
         try:
             # Create folder if not exist
             os.mkdir(path)
