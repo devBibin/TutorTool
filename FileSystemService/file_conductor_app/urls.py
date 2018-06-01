@@ -23,4 +23,9 @@ urlpatterns = [
     url(r'^add_question/$', views.add_question),
     #url(r'^(?P<id>[0-9]+)/remove_question/$', views.remove_question),
     #url(r'^(?P<id>[0-9]+)/edit_question/$', views.edit_question),
+    
+    url(r'^transfer/(?P<object_type>[\w\-]+)/(?P<object_id>[0-9]+)/$', views.transfer_object),
+    url(r'^transfer/$', views.submit_transfer),
+    url(r'^transfer/(?P<parent_id>[0-9]+)/$', views.submit_transfer),
+    
 ]

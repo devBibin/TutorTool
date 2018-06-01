@@ -11,15 +11,37 @@
 {%if d.can_be_deleted == True%}
 |||<a href="/file-system/{{d.id}}/remove_folder/">delete</a>
 {%endif%}
+{%if d.is_editable == True%}
+|||<a href="/file-system/transfer/dir/{{d.id}}">transfer</a>
+{%endif%}
 <br>
 {%endfor%}
 
 <hr>
 {%for f in files%}
-<a href="/file-system/{{f.id}}/download_file/">{{f.name}}</a>|||<a href="/file-system/{{f.id}}/remove_file/">delete</a><br>
+<a href="/file-system/{{f.id}}/download_file/">{{f.name}}</a>|||
+{%if f.can_be_deleted == True%}
+<a href="/file-system/{{f.id}}/remove_file/">delete</a>|||
+{%endif%}
+{%if f.is_editable == True%}
+<a href="/file-system/transfer/file/{{f.id}}">transfer</a><br>
+{%endif%}
 {%endfor%}
 <hr>
 
+<hr>
+{%for t in tests%}
+<a href="/file-system/test/{{t.id}}/">{{t.name}}</a><br>
+{%endfor%}
+<hr>
+
+<hr>
+{%for q in questions%}
+<a href="/file-system/question/{{q.id}}/">{{q.name}}</a><br>
+{%endfor%}
+<hr>
+
+{%if is_transferring == False%}
 <form action="upload_file/" enctype="multipart/form-data" method="post">
     {% csrf_token %}
     <input type="file" name="file" required id="id_file" />
@@ -33,3 +55,10 @@
     <input type="text" name="name" required id="id_name" maxlength="50" />
     <input type="submit" value="Submit" />
 </form>
+{%else%}
+	{% if master.pk%}
+		<a href="/file-system/transfer/{{master.pk}}/">Submit Transfer</a>
+	{%else%}
+		<a href="/file-system/transfer/">Submit Transfer</a>
+	{%endif%}
+{%endif%}

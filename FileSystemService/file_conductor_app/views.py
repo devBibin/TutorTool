@@ -39,6 +39,11 @@ def create_repo(request):
 
 def get_folder(request, folder_id=None):
     if (request.method == "GET"):
+        is_transferring = False
+        if 'object_type' in request.session and 'object_id' in request.session:
+            is_transferring = True
+
+        
         # Get current user
         user = request.user
 
@@ -62,6 +67,7 @@ def get_folder(request, folder_id=None):
              "tests" : tests,
              "questions": questions,
              "master": master,
+             "is_transferring": is_transferring,
              })
 
 
@@ -210,6 +216,44 @@ def add_question(request):
                 is_true= item["is_true"])
 
         return HttpResponse("OK")
+
+
+def transfer_object(request, object_type, object_id):
+    request.session['object_id'] = object_id
+    request.session['object_type'] = object_type
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+
+
+def submit_transfer(request, parent_id = None):
+    # WARNING SECURITY!!!
+    pk = request.session['object_id']
+    object_type = request.session['object_type']
+    # Get object
+    if (object_type == "dir"):
+        cur_obj = Directory.objects.get(pk = pk)
+    elif (object_type == "file"):
+        cur_obj = File.objects.get(pk = pk)
+    elif (object_type == "question"):
+        cur_obj = Question.objects.get(pk = pk)
+    elif (object_type == "test"):
+        cur_obj = Test.objects.get(pk = pk)
+    else:
+        pass
+
+
+    cur_obj.last_upd = timezone.now()
+    cur_obj.upd_type = "Transfer"
+    cur_obj.parent_id = parent_id
+    cur_obj.save()
+
+    del request.session['object_type']
+    del request.session['object_id']
+    request.session.modified = True
+    if (parent_id):
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
+    else:
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+
 
 
 def user_auth(request):
