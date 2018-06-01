@@ -1,64 +1,85 @@
+<p>{{title}}</p>
+
 {% if master.parent%}
-<a href="/file-system/{{master.parent.pk}}/">Back</a>
+	<a href="/file-system/{{master.parent.pk}}/">Back</a>
 {%else%}
-<a href="/file-system/">Back</a>
+	<a href="/file-system/">Back</a>
 {%endif%}
 <hr>
 
 
 {%for d in dirs%}
-<a href="/file-system/{{d.pk}}/">{{d.name}}</a>
-{%if d.can_be_deleted == True%}
-|||<a href="/file-system/{{d.id}}/remove_folder/">delete</a>
-{%endif%}
-{%if d.is_editable == True%}
-|||<a href="/file-system/transfer/dir/{{d.id}}">transfer</a>
-{%endif%}
-<br>
+	<a href="/file-system/{{d.pk}}/">{{d.name}}</a>
+	{%if mode == 0%}
+		{%if d.can_be_deleted == True%}
+			|||<a href="/file-system/remove_folder/{{d.id}}/">delete</a>
+		{%endif%}
+		
+		{%if d.is_editable == True%}
+			|||<a href="/file-system/transfer/dir/{{d.id}}">transfer</a>
+		{%endif%}
+	{%endif%}
+	<br>
 {%endfor%}
-
 <hr>
+
+
 {%for f in files%}
-<a href="/file-system/{{f.id}}/download_file/">{{f.name}}</a>|||
-{%if f.can_be_deleted == True%}
-<a href="/file-system/{{f.id}}/remove_file/">delete</a>|||
-{%endif%}
-{%if f.is_editable == True%}
-<a href="/file-system/transfer/file/{{f.id}}">transfer</a><br>
-{%endif%}
+	<a href="/file-system/download_file/{{f.id}}/">{{f.name}}</a>|||
+	{%if mode == 0%}
+		{%if f.can_be_deleted == True%}
+			<a href="/file-system/remove_file/{{f.id}}/">delete</a>|||
+		{%endif%}
+		
+		{%if f.is_editable == True%}
+			<a href="/file-system/transfer/file/{{f.id}}">transfer</a>
+		{%endif%}
+	{%endif%}
+	<br>
 {%endfor%}
 <hr>
 
-<hr>
+
 {%for t in tests%}
-<a href="/file-system/test/{{t.id}}/">{{t.name}}</a><br>
+	<a href="/file-system/test/{{t.id}}/">{{t.name}}</a><br>
 {%endfor%}
 <hr>
 
-<hr>
+
 {%for q in questions%}
-<a href="/file-system/question/{{q.id}}/">{{q.name}}</a><br>
+	<a href="/file-system/question/{{q.id}}/">{{q.name}}</a>
+	{%if mode == 0%}
+		<a href="/file-system/remove_question/{{q.id}}">delete</a>|||
+		<a href="/file-system/transfer/question/{{q.id}}/">transfer</a>
+	{%endif%}
+
+	{%if mode == 2%}
+		|||<a href="/file-system/question/{{q.id}}/add/{{test_id}}/">Добавить</a>
+	{%endif%}
+	<br>
 {%endfor%}
 <hr>
 
-{%if is_transferring == False%}
-<form action="upload_file/" enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    <input type="file" name="file" required id="id_file" />
-    <input type="submit" value="Submit" />
-</form>
+{%if mode == 0%}
+	<form action="/file-system/upload_file/{{master.pk}}/" enctype="multipart/form-data" method="post">
+	    {% csrf_token %}
+	    <input type="file" name="file" required id="id_file" />
+	    <input type="submit" value="Submit" />
+	</form>
 
-<hr>
+	<hr>
 
-<form action="create_folder/" method="post">
-    {% csrf_token %}
-    <input type="text" name="name" required id="id_name" maxlength="50" />
-    <input type="submit" value="Submit" />
-</form>
-{%else%}
+	<form action="/file-system/create_folder/{{master.pk}}/" method="post">
+	    {% csrf_token %}
+	    <input type="text" name="name" required id="id_name" maxlength="50" />
+	    <input type="submit" value="Submit" />
+	</form>
+{%elif mode == 1%}
 	{% if master.pk%}
 		<a href="/file-system/transfer/{{master.pk}}/">Submit Transfer</a>
 	{%else%}
 		<a href="/file-system/transfer/">Submit Transfer</a>
 	{%endif%}
+{%elif mode == 2%}
+	<a href="/file-system/test/submit/">Finish Test Compiling</a>
 {%endif%}

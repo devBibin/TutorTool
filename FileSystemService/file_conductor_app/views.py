@@ -15,34 +15,60 @@ import os
 
 FILE_SYSTEM_URL = "http://localhost:8000/"
 
+#==============================================================================
+#==========================TEMP FUNCTIONS======================================
 def index(request):
     print user_auth(request)
     return render(request, 'file_conductor_app/base.html')
 
 
+def user_auth(request):
+    username = "foo"
+    password = "bar"
+    user = auth.authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth.login(request, user)
+            return True
+    else:
+        return False
+#==============================================================================
+
+
+#==============================================================================
+#=======================CREATE REPOSITORY======================================
 def create_repo(request):
-    if (request.method == "POST"):
-        # Get current user
-        user = request.user
-        
-        # Create filesystem
-        fs = FileSystem.objects.create(master = user)
-        
-        # Create service's directories
-        Directory.objects.create(file_system=fs, 
-            name="Temp", 
-            is_editable=False, 
-            can_be_deleted=False)
+    # Get current user
+    user = request.user
+    
+    # Create filesystem
+    fs = FileSystem.objects.create(master = user)
+    
+    # Create service's directories
+    Directory.objects.create(file_system=fs, 
+        name="Temp", 
+        is_editable=False, 
+        can_be_deleted=False)
 
-        return HttpResponse("Created for " + str(user.username))
+    return HttpResponse("Created for " + str(user.username))
+#==============================================================================
 
 
+#==============================================================================
+#===============================FOLDER API=====================================
 def get_folder(request, folder_id=None):
     if (request.method == "GET"):
-        is_transferring = False
-        if 'object_type' in request.session and 'object_id' in request.session:
-            is_transferring = True
-
+        test_id = ""
+        mode = 0
+        title = "Ваша файловая система"
+        if 'test_id' in request.session:
+            t = Test.objects.get(pk = str(request.session["test_id"]))
+            title = "Выберите вопросы для включения в тест: " + t.name
+            mode = 2
+            test_id = request.session["test_id"]
+        elif 'object_type' in request.session and 'object_id' in request.session:
+            title = "Выберите директорию, где будет храниться объект"
+            mode = 1
         
         # Get current user
         user = request.user
@@ -67,7 +93,9 @@ def get_folder(request, folder_id=None):
              "tests" : tests,
              "questions": questions,
              "master": master,
-             "is_transferring": is_transferring,
+             "mode": mode,
+             "title": title,
+             "test_id": test_id,
              })
 
 
@@ -102,8 +130,13 @@ def remove_folder(request, id):
         
         # Return result
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+#==============================================================================
+#==============================================================================
 
 
+
+#==============================================================================
+#=================================FILE API=====================================
 def upload_file(request, parent_id=None):
     if (request.method == 'POST'):
         # Get parent directory
@@ -165,8 +198,13 @@ def remove_file(request, id):
         
         # Return result
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+#==============================================================================
+#==============================================================================
 
 
+
+#==============================================================================
+#==============================QUESTIONS API===================================
 def add_question(request):
     if (request.method == "GET"):
         return render(request, 'file_conductor_app/question.html')
@@ -204,7 +242,7 @@ def add_question(request):
         # Save question
         q = Question.objects.create(file_system = fs,
             name=name,
-            bodytext=body,
+            body=body,
             parent=directory,
             answer_type=answer_type,
             rate=rate,
@@ -215,9 +253,85 @@ def add_question(request):
                 text = item["choice"],
                 is_true= item["is_true"])
 
-        return HttpResponse("OK")
+        return transfer_object(request, "question", q.pk)
 
 
+def get_question(request, question_id):
+    q = Question.objects.get(pk=question_id)
+    qc = QuestionChoices.objects.filter(question = q)
+    return render(request, 'file_conductor_app/question.html',
+        {
+        "question": q,
+        "questionchoices" : qc,
+        })
+#==============================================================================
+
+
+#==============================================================================
+#==============================TEST API========================================
+def add_test(request):
+    if (request.method == "GET"):
+        return render(request, 'file_conductor_app/test.html')
+    elif (request.method == "POST"):
+        # Get POST data
+        name = request.POST.get("name")
+        description = request.POST.get("description")
+        time = request.POST.get("time")
+
+        # Get current user
+        user = request.user
+        
+        # Get filesystem
+        fs = FileSystem.objects.get(master=user)
+        
+        # Get Temp directory
+        directory = Directory.objects.get(file_system=fs, name = "Temp")      
+
+        # Save question
+        t = Test.objects.create(file_system = fs,
+            name=name,
+            description=description,
+            time=time,
+            parent=directory,
+            )
+
+        request.session["test_id"] = t.pk
+        request.session['object_id'] = t.pk
+        request.session['object_type'] = "test"
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+
+
+def get_test(request, test_id):
+    t = Test.objects.get(pk=test_id)
+    qref = QuestionToTest.objects.filter(test = t)
+    return render(request, 'file_conductor_app/test.html',
+        {"test" : t,
+        "questions": qref})
+
+
+def search_for_test(request, test_id):
+    t = Test.objects.get(pk=test_id)
+    request.session["test_id"] = t.pk
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+
+
+def submit_test(request):
+    del request.session['test_id']
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+
+def add_question_to_test(request, question_id, test_id):
+    q = Question.objects.get(pk = question_id)
+    t = Test.objects.get(pk = test_id)
+    index = len(QuestionToTest.objects.filter(test = t))
+    QuestionToTest.objects.create(question = q, test = t, q_index_in_test = index + 1)
+    parent, parent_str = define_parent(q.parent_id)
+    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)   
+#==============================================================================
+
+
+
+#==============================================================================
+#===========================TRANSFERING OBJECTS API============================
 def transfer_object(request, object_type, object_id):
     request.session['object_id'] = object_id
     request.session['object_type'] = object_type
@@ -240,6 +354,11 @@ def submit_transfer(request, parent_id = None):
     else:
         pass
 
+    if (pk == parent_id) and (object_type == "dir"):
+        del request.session['object_type']
+        del request.session['object_id']
+        request.session.modified = True
+        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
 
     cur_obj.last_upd = timezone.now()
     cur_obj.upd_type = "Transfer"
@@ -253,16 +372,4 @@ def submit_transfer(request, parent_id = None):
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
     else:
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
-
-
-
-def user_auth(request):
-    username = "xxx"
-    password = "000"
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            return True
-    else:
-        return False
+#==============================================================================

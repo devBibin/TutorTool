@@ -1,0 +1,13 @@
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="name" value="{{test.name}}"/><br>
+    <input type="text" name="description" value="{{test.description}}"/><br>
+    <input type="text" name="time" value="{{test.time}}"/><br>
+    {%if test%}
+    	{%for q in questions%}
+            <a href="/file-system/question/{{q.question.id}}/">{{q.q_index_in_test}}. {{q.question.name}}</a><br>
+    	{%endfor%}
+    	<a href="/file-system/test/{{test.id}}/add_questions/">Add more</a><br>
+    {%endif%}
+    <input type="submit" value="Submit" />
+</form>

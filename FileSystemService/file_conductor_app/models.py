@@ -44,7 +44,10 @@ class File(models.Model):
 class Test(models.Model):
 	file_system = models.ForeignKey(FileSystem, )
 	parent = models.ForeignKey(Directory, null=True, default=None)
-	name = models.CharField(max_length = 30, default="Unknown")
+	name = models.CharField(max_length = 30)
+	description = models.CharField(max_length=500)
+	time = models.IntegerField()
+
 	creation_date = models.DateTimeField(default = timezone.now)
 	last_upd = models.DateTimeField(default = timezone.now)
 	upd_type = models.CharField(max_length=30, default="")
@@ -55,13 +58,13 @@ class Test(models.Model):
 class Question(models.Model):
 	file_system = models.ForeignKey(FileSystem)
 	parent = models.ForeignKey(Directory, null=True, default=None)
-	name = models.CharField(max_length = 30, default="Unknown")
+	name = models.CharField(max_length = 30)
 	creation_date = models.DateTimeField(default = timezone.now)
 	last_upd = models.DateTimeField(default = timezone.now)
 	upd_type = models.CharField(max_length=30, default="")
 
-	bodytext = models.CharField(max_length = 150)
-	answer_type = models.CharField(max_length=10)
+	body = models.CharField(max_length = 150)
+	answer_type = models.CharField(max_length=20)
 	rate = models.IntegerField()
 
 	is_deleted = models.BooleanField(default = False)

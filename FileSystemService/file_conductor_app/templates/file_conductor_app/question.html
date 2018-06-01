@@ -1,8 +1,8 @@
 <form method="post">
     {% csrf_token %}
-    <input type="text" name="name" /><br>
-    <input type="text" name="body" /><br>
-    <select name="answer_type"><br>
+    <input type="text" name="name" value="{{question.name}}"/><br>
+    <input type="text" name="body" value="{{question.body}}" /><br>
+    <select name="answer_type" id="answer_type_id"><br>
 	    <option value="test">Тестовое</option><br>
 	    <option value="free_answer">Свободный ответ</option><br>
 	    <option value="file">Файл</option><br>
@@ -17,8 +17,8 @@
     <input type="text" name="choice8"><input type="checkbox" name="is_true8"><br>
     <input type="text" name="choice9"><input type="checkbox" name="is_true9"><br>
     <input type="text" name="choice10"><input type="checkbox" name="is_true10"><br>
-    <select name="rate"><br>
-	    <option value="without_rate">Без оценки</option><br>
+    <select name="rate" id="rate_id"><br>
+	    <option value="without_rate" >Без оценки</option><br>
 	    <option value="1">1</option><br>
 	    <option value="2">2</option><br>
 	    <option value="3">3</option><br>
@@ -32,3 +32,11 @@
    	</select><br>
     <input type="submit" value="Submit" />
 </form>
+
+
+<script type="text/javascript">
+	window.onload = function(){
+		document.getElementById('answer_type_id').value="{{question.answer_type}}";
+		document.getElementById('rate_id').value="{{question.rate}}";  
+	}
+</script>
