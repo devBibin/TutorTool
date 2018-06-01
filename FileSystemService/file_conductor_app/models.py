@@ -67,6 +67,17 @@ class Question(models.Model):
 	is_deleted = models.BooleanField(default = False)
 
 
+class QuestionFiles(models.Model):
+	file = models.ForeignKey(File)
+	question = models.ForeignKey(Question)
+
+
+class QuestionChoices(models.Model):
+	question = models.ForeignKey(Question)
+	text = models.CharField(max_length=150)
+	is_true = models.BooleanField()
+
+
 class QuestionToTest(models.Model):
 	question = models.ForeignKey(Question)
 	test = models.ForeignKey(Test)

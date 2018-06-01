@@ -1,0 +1,34 @@
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="name" /><br>
+    <input type="text" name="body" /><br>
+    <select name="answer_type"><br>
+	    <option value="test">Тестовое</option><br>
+	    <option value="free_answer">Свободный ответ</option><br>
+	    <option value="file">Файл</option><br>
+   	</select><br>
+    <input type="text" name="choice1"><input type="checkbox" name="is_true1"><br>
+    <input type="text" name="choice2"><input type="checkbox" name="is_true2"><br>
+    <input type="text" name="choice3"><input type="checkbox" name="is_true3"><br>
+    <input type="text" name="choice4"><input type="checkbox" name="is_true4"><br>
+    <input type="text" name="choice5"><input type="checkbox" name="is_true5"><br>
+    <input type="text" name="choice6"><input type="checkbox" name="is_true6"><br>
+    <input type="text" name="choice7"><input type="checkbox" name="is_true7"><br>
+    <input type="text" name="choice8"><input type="checkbox" name="is_true8"><br>
+    <input type="text" name="choice9"><input type="checkbox" name="is_true9"><br>
+    <input type="text" name="choice10"><input type="checkbox" name="is_true10"><br>
+    <select name="rate"><br>
+	    <option value="without_rate">Без оценки</option><br>
+	    <option value="1">1</option><br>
+	    <option value="2">2</option><br>
+	    <option value="3">3</option><br>
+	    <option value="4">4</option><br>
+	    <option value="5">5</option><br>
+	    <option value="6">6</option><br>
+	    <option value="7">7</option><br>
+	    <option value="8">8</option><br>
+	    <option value="9">9</option><br>
+	    <option value="10">10</option><br>
+   	</select><br>
+    <input type="submit" value="Submit" />
+</form>

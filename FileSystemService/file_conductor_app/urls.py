@@ -19,4 +19,8 @@ urlpatterns = [
     url(r'^(?P<parent_id>[0-9]+)/upload_file/$', views.upload_file),
     url(r'^(?P<id>[0-9]+)/download_file/$', views.download_file),
     url(r'^(?P<id>[0-9]+)/remove_file/$', views.remove_file),
+
+    url(r'^add_question/$', views.add_question),
+    #url(r'^(?P<id>[0-9]+)/remove_question/$', views.remove_question),
+    #url(r'^(?P<id>[0-9]+)/edit_question/$', views.edit_question),
 ]

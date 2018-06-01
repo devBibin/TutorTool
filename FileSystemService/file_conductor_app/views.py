@@ -72,9 +72,9 @@ def create_folder(request, parent_id=None):
         # Get user
         user = request.user
         # Get filesystem of user
-        fs = FileSystem.objects.get(master= user)
+        fs = FileSystem.objects.get(master=user)
         # Get folder name
-        name = request.POST["name"]
+        name = request.POST.get("name")
         # Create folder
         Directory.objects.create(file_system=fs, parent=parent, name = name)
         
@@ -159,6 +159,57 @@ def remove_file(request, id):
         
         # Return result
         return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+
+
+def add_question(request):
+    if (request.method == "GET"):
+        return render(request, 'file_conductor_app/question.html')
+    elif (request.method == "POST"):
+        # Get POST data
+        name = request.POST.get("name")
+        body = request.POST.get("body")
+        answer_type = request.POST.get("answer_type")
+        rate = request.POST.get("rate")
+        choices = []
+        for i in range(1,11):
+            item = {}
+            # Get text
+            item["choice"] = request.POST.get("choice"+str(i))
+            
+            # Get is_true flag
+            if (request.POST.get("is_true"+str(i)) == "on"):
+                item["is_true"] = True
+            else:
+                item["is_true"] = False
+
+            # Append if text is not empty
+            if (len(item["choice"]) > 0):
+                choices.append(item)
+        
+        # Get current user
+        user = request.user
+        
+        # Get filesystem
+        fs = FileSystem.objects.get(master=user)
+        
+        # Get Temp directory
+        directory = Directory.objects.get(file_system=fs, name = "Temp")      
+
+        # Save question
+        q = Question.objects.create(file_system = fs,
+            name=name,
+            bodytext=body,
+            parent=directory,
+            answer_type=answer_type,
+            rate=rate,
+            )
+        # Save question choices
+        for item in choices:
+            QuestionChoices.objects.create(question= q,
+                text = item["choice"],
+                is_true= item["is_true"])
+
+        return HttpResponse("OK")
 
 
 def user_auth(request):
