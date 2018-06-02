@@ -7,39 +7,25 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
+from django.core import serializers
+from django.forms.models import model_to_dict
+from django.views.decorators.csrf import csrf_exempt
 
 from models import *
 from utils import *
 
+import json
 import os
+import re
 
-FILE_SYSTEM_URL = "http://localhost:8000/"
-
-#==============================================================================
-#==========================TEMP FUNCTIONS======================================
-def index(request):
-    print user_auth(request)
-    return render(request, 'file_conductor_app/base.html')
-
-
-def user_auth(request):
-    username = "foo"
-    password = "bar"
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            return True
-    else:
-        return False
-#==============================================================================
-
+FILE_SYSTEM_URL = "http://localhost:8001/"
 
 #==============================================================================
 #=======================CREATE REPOSITORY======================================
+@csrf_exempt
 def create_repo(request):
     # Get current user
-    user = request.user
+    user = get_user_id(request)
     
     # Create filesystem
     fs = FileSystem.objects.create(master = user)
@@ -50,29 +36,17 @@ def create_repo(request):
         is_editable=False, 
         can_be_deleted=False)
 
-    return HttpResponse("Created for " + str(user.username))
+    return HttpResponse("Repository was created. Parent for redirect [" + str(None) + "]")
 #==============================================================================
 
 
 #==============================================================================
 #===============================FOLDER API=====================================
+@csrf_exempt
 def get_folder(request, folder_id=None):
+    # Get current user
+    user = get_user_id(request)     
     if (request.method == "GET"):
-        test_id = ""
-        mode = 0
-        title = "Ваша файловая система"
-        if 'test_id' in request.session:
-            t = Test.objects.get(pk = str(request.session["test_id"]))
-            title = "Выберите вопросы для включения в тест: " + t.name
-            mode = 2
-            test_id = request.session["test_id"]
-        elif 'object_type' in request.session and 'object_id' in request.session:
-            title = "Выберите директорию, где будет храниться объект"
-            mode = 1
-        
-        # Get current user
-        user = request.user
-
         # Get all info about current directory in current filesystem
         fs = FileSystem.objects.get(master= user)
         dirs = Directory.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
@@ -80,18 +54,38 @@ def get_folder(request, folder_id=None):
         tests = Test.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
         questions = Question.objects.filter(file_system=fs, parent=folder_id, is_deleted=False)
         
+
+        # Get status of FileSystem
+        test_id = ""
+        if (fs.status == "surfing"):
+            title = "Ваша файловая система"
+            mode = 0
+        elif (fs.status == "transfering"):
+            title = "Выберите директорию, где будет храниться объект"
+            mode = 1
+        elif (fs.status == "collecting_test"):
+            # Set current test id and get object
+            test_id = fs.temp_id
+            t = Test.objects.get(pk = test_id)
+
+            title = "Выберите вопросы для включения в тест: " + t.name
+            mode = 2
+        else:
+            print "Краш: неизвестный статус файловой системы"
+
         # Get parent directory
         try:
             master = Directory.objects.get(pk=folder_id)
+            master = model_to_dict(master)
         except:
             master = None
         
         # Return result
-        return render(request, "file_conductor_app/file_system.html", 
-            {"dirs" : dirs,
-             "files" : files,
-             "tests" : tests,
-             "questions": questions,
+        return JsonResponse(
+            {"dirs" : list(dirs.values()),
+             "files" : list(files.values()),
+             "tests" : list(tests.values()),
+             "questions": list(questions.values()),
              "master": master,
              "mode": mode,
              "title": title,
@@ -99,26 +93,28 @@ def get_folder(request, folder_id=None):
              })
 
 
+@csrf_exempt
 def create_folder(request, parent_id=None):
+    # Get current user
+    user = get_user_id(request) 
     if (request.method == "POST"):
         # Get parent folder
         parent, parent_str = define_parent(parent_id)
-        # Get user
-        user = request.user
         # Get filesystem of user
-        fs = FileSystem.objects.get(master=user)
+        fs = FileSystem.objects.get(master=int(user))
         # Get folder name
         name = request.POST.get("name")
         # Create folder
         Directory.objects.create(file_system=fs, parent=parent, name = name)
         
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+        return HttpResponse("Folder was created. Parent for redirect [" + str(parent_id) + "]")
 
 
+@csrf_exempt
 def remove_folder(request, id):
+    # Get current user
+    user = get_user_id(request) 
     if (request.method == "GET"):
-        # Get current user
-        user = request.user
 
         # Get and set deleted flag
         d = Directory.objects.get(pk=id)
@@ -127,9 +123,9 @@ def remove_folder(request, id):
 
         # Get current folder
         parent, parent_str = define_parent(d.parent_id)
-        
+
         # Return result
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+        return HttpResponse("Folder was removed. Parent for redirect [" + str(parent_str) + "]")
 #==============================================================================
 #==============================================================================
 
@@ -137,13 +133,13 @@ def remove_folder(request, id):
 
 #==============================================================================
 #=================================FILE API=====================================
+@csrf_exempt
 def upload_file(request, parent_id=None):
+    # Get current user
+    user = get_user_id(request)     
     if (request.method == 'POST'):
         # Get parent directory
         parent, parent_str = define_parent(parent_id)
-        
-        # Get user
-        user = request.user
 
         # Get filename
         filename = request.FILES['file'].name
@@ -152,7 +148,7 @@ def upload_file(request, parent_id=None):
         fs = FileSystem.objects.get(master=user)
         
         # Set path for teachers repository
-        path = os.path.join(settings.BASE_DIR + "/../teachers_repositories/", str(str(user.pk)+"_"+str(user.username)))
+        path = os.path.join(settings.BASE_DIR + "/../teachers_repositories/", str(user))
         try:
             # Create folder if not exist
             os.mkdir(path)
@@ -168,14 +164,18 @@ def upload_file(request, parent_id=None):
             parent=parent, 
             path=path, 
             )
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+        return HttpResponse("File was uploaded. Parent for redirect [" + str(parent_str) + "]")
 
 
+@csrf_exempt
 def download_file(request, id):
+    # SECURITY WARNING
+    # Get current user
+    user = get_user_id(request) 
+
     if (request.method == "GET"):
         f_obj = File.objects.get(pk=id)
         file_path = f_obj.path + "/" + f_obj.name
-        print file_path
         if os.path.exists(file_path):
             with open(file_path, 'rb') as fh:
                 response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
@@ -184,10 +184,11 @@ def download_file(request, id):
         raise Http404
 
 
+@csrf_exempt
 def remove_file(request, id):
-    if (request.method == "GET"):    
-        # Get current user
-        user = request.user
+    # Get current user
+    user = get_user_id(request) 
+    if (request.method == "GET"):
 
         # Get and set deleted flag
         f = File.objects.get(pk=id)
@@ -197,7 +198,7 @@ def remove_file(request, id):
         parent, parent_str = define_parent(f.parent_id)
         
         # Return result
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)
+        return HttpResponse("File was removed. Parent for redirect [" + str(parent_str) + "]")
 #==============================================================================
 #==============================================================================
 
@@ -205,10 +206,11 @@ def remove_file(request, id):
 
 #==============================================================================
 #==============================QUESTIONS API===================================
+@csrf_exempt
 def add_question(request):
-    if (request.method == "GET"):
-        return render(request, 'file_conductor_app/question.html')
-    elif (request.method == "POST"):
+    # Get current user
+    user = get_user_id(request)     
+    if (request.method == "POST"):
         # Get POST data
         name = request.POST.get("name")
         body = request.POST.get("body")
@@ -229,9 +231,6 @@ def add_question(request):
             # Append if text is not empty
             if (len(item["choice"]) > 0):
                 choices.append(item)
-        
-        # Get current user
-        user = request.user
         
         # Get filesystem
         fs = FileSystem.objects.get(master=user)
@@ -256,30 +255,47 @@ def add_question(request):
         return transfer_object(request, "question", q.pk)
 
 
+@csrf_exempt
+def remove_question(request, id):
+    # Get current user
+    user = get_user_id(request) 
+    if (request.method == "GET"):
+
+        # Get and set deleted flag
+        q = Question.objects.get(pk=id)
+        q.is_deleted = True
+        q.save()
+
+        parent, parent_str = define_parent(q.parent_id)
+        
+        # Return result
+        return HttpResponse("File was removed. Parent for redirect [" + str(parent_str) + "]")
+
+
+@csrf_exempt
 def get_question(request, question_id):
+    # Get current user
+    user = get_user_id(request) 
     q = Question.objects.get(pk=question_id)
     qc = QuestionChoices.objects.filter(question = q)
-    return render(request, 'file_conductor_app/question.html',
-        {
-        "question": q,
-        "questionchoices" : qc,
-        })
+    return JsonResponse(
+        {"question" : model_to_dict(q),
+         "questionchoices" : list(qc.values()),}
+        )
 #==============================================================================
 
 
 #==============================================================================
 #==============================TEST API========================================
+@csrf_exempt
 def add_test(request):
-    if (request.method == "GET"):
-        return render(request, 'file_conductor_app/test.html')
-    elif (request.method == "POST"):
+    # Get current user
+    user = get_user_id(request)    
+    if (request.method == "POST"):
         # Get POST data
         name = request.POST.get("name")
         description = request.POST.get("description")
         time = request.POST.get("time")
-
-        # Get current user
-        user = request.user
         
         # Get filesystem
         fs = FileSystem.objects.get(master=user)
@@ -295,53 +311,125 @@ def add_test(request):
             parent=directory,
             )
 
-        request.session["test_id"] = t.pk
-        request.session['object_id'] = t.pk
-        request.session['object_type'] = "test"
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+        fs = FileSystem.objects.get(master = user)
+        fs.status = "collecting_test"
+        fs.temp_id = t.pk
+        fs.save()
+        
+        return HttpResponse("Test was created. Parent for redirect [" + str(None) + "]")
 
 
+@csrf_exempt
 def get_test(request, test_id):
+    # Get current user
+    user = get_user_id(request) 
     t = Test.objects.get(pk=test_id)
-    qref = QuestionToTest.objects.filter(test = t)
-    return render(request, 'file_conductor_app/test.html',
-        {"test" : t,
-        "questions": qref})
+    qref = list(QuestionToTest.objects.filter(test = t).values())
+    print qref
+    for i in range(len(qref)):
+        q = Question.objects.get(pk = qref[i]["question_id"])
+        qref[i]["question_id"] = model_to_dict(q)
+    print qref
+    return JsonResponse({
+        "test" : model_to_dict(t),
+        "questions": qref,
+        })
 
 
+@csrf_exempt
+def remove_test(request, id):
+    # Get current user
+    user = get_user_id(request) 
+    if (request.method == "GET"):
+
+        # Get and set deleted flag
+        t = Test.objects.get(pk=id)
+        t.is_deleted = True
+        t.save()
+
+        parent, parent_str = define_parent(t.parent_id)
+        
+        # Return result
+        return HttpResponse("File was removed. Parent for redirect [" + str(parent_str) + "]")
+
+
+@csrf_exempt
 def search_for_test(request, test_id):
+    # Get current user
+    user = get_user_id(request) 
     t = Test.objects.get(pk=test_id)
-    request.session["test_id"] = t.pk
-    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+    
+    # Get FileSystem and set status collecting test
+    fs = FileSystem.objects.get(master = user)
+    fs.status = "collecting_test"
+    fs.temp_id = test_id
+    fs.save()
+
+    return HttpResponse("Test was created. Parent for redirect [" + str(None) + "]")
 
 
-def submit_test(request):
-    del request.session['test_id']
-    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+@csrf_exempt
+def submit_test(request, test_id):
+    # Get current user
+    user = get_user_id(request) 
+    
+    # Get FileSystem and set status transfering test
+    fs = FileSystem.objects.get(master = user)
+    fs.status = "transfering"
+    fs.temp_transfer_type = "test"
+    fs.save()    
+    
+    return HttpResponse("Test was submitted. Parent for redirect [" + str(None) + "]")
 
+
+@csrf_exempt
 def add_question_to_test(request, question_id, test_id):
+    # Get current user
+    user = get_user_id(request) 
+    
+    # Get question and test
     q = Question.objects.get(pk = question_id)
     t = Test.objects.get(pk = test_id)
+    
+    # Get current index of question
     index = len(QuestionToTest.objects.filter(test = t))
+    
+    # Create object
     QuestionToTest.objects.create(question = q, test = t, q_index_in_test = index + 1)
+    
+    # Redirect to currenr folder
     parent, parent_str = define_parent(q.parent_id)
-    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + parent_str)   
+    return HttpResponse("Question added to test. Parent for redirect [" + str(parent_str) + "]")  
 #==============================================================================
 
 
 
 #==============================================================================
 #===========================TRANSFERING OBJECTS API============================
+@csrf_exempt
 def transfer_object(request, object_type, object_id):
-    request.session['object_id'] = object_id
-    request.session['object_type'] = object_type
-    return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+    user = get_user_id(request)
+    
+    # Get FileSystem and set status transferring for object_id of type object_type
+    fs = FileSystem.objects.get(master = user)
+    fs.status = "transfering"
+    fs.temp_transfer_type = object_type
+    fs.temp_id = object_id
+    fs.save()
+    
+    return HttpResponse("Object of type: " +str(object_type)+" and id: "+str(object_id)+" is transferring. Parent for redirect [" + str(None) + "]")
 
 
+@csrf_exempt
 def submit_transfer(request, parent_id = None):
     # WARNING SECURITY!!!
-    pk = request.session['object_id']
-    object_type = request.session['object_type']
+    user = get_user_id(request)
+    fs = FileSystem.objects.get(master = user)
+    
+    # Get type and id of the object
+    object_type = fs.temp_transfer_type
+    pk = fs.temp_id
+    
     # Get object
     if (object_type == "dir"):
         cur_obj = Directory.objects.get(pk = pk)
@@ -354,22 +442,29 @@ def submit_transfer(request, parent_id = None):
     else:
         pass
 
+    # If object is dir and user tries to push dir to itself
     if (pk == parent_id) and (object_type == "dir"):
-        del request.session['object_type']
-        del request.session['object_id']
-        request.session.modified = True
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+        fs.temp_transfer_type = None
+        fs.temp_id = None
+        fs.status = "surfing"
+        fs.save()
+        return HttpResponse("Object wasn't transfered: recursive error. Parent for redirect [" + str(None) + "]", status = 400)
 
+    # Change parent of the object
     cur_obj.last_upd = timezone.now()
     cur_obj.upd_type = "Transfer"
     cur_obj.parent_id = parent_id
     cur_obj.save()
 
-    del request.session['object_type']
-    del request.session['object_id']
-    request.session.modified = True
-    if (parent_id):
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/" + str(parent_id))
+    # Change status of FileSystem to surfing
+    fs.temp_transfer_type = None
+    fs.temp_id = None
+    fs.status = "surfing"
+    fs.save()
+
+    # Redirect to current folder
+    if (parent_id == None):
+        return HttpResponse("Object was transfered. Parent for redirect [" + str(None) + "]")
     else:
-        return HttpResponseRedirect(FILE_SYSTEM_URL + "file-system/")
+       return HttpResponse("Object was transfered. Parent for redirect [" + str(parent_id) + "]")
 #==============================================================================

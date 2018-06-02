@@ -1,7 +1,7 @@
 <p>{{title}}</p>
 
 {% if master.parent%}
-	<a href="/file-system/{{master.parent.pk}}/">Back</a>
+	<a href="/file-system/{{master.parent}}/">Back</a>
 {%else%}
 	<a href="/file-system/">Back</a>
 {%endif%}
@@ -9,7 +9,7 @@
 
 
 {%for d in dirs%}
-	<a href="/file-system/{{d.pk}}/">{{d.name}}</a>
+	<a href="/file-system/{{d.id}}/">{{d.name}}</a>
 	{%if mode == 0%}
 		{%if d.can_be_deleted == True%}
 			|||<a href="/file-system/remove_folder/{{d.id}}/">delete</a>
@@ -41,7 +41,12 @@
 
 
 {%for t in tests%}
-	<a href="/file-system/test/{{t.id}}/">{{t.name}}</a><br>
+	<a href="/file-system/test/{{t.id}}/">{{t.name}}</a>|||
+	{%if mode == 0%}
+		<a href="/file-system/remove_test/{{t.id}}">delete</a>|||
+		<a href="/file-system/transfer/test/{{t.id}}/">transfer</a>
+	{%endif%}
+	<br>
 {%endfor%}
 <hr>
 
@@ -61,7 +66,7 @@
 <hr>
 
 {%if mode == 0%}
-	<form action="/file-system/upload_file/{{master.pk}}/" enctype="multipart/form-data" method="post">
+	<form action="/file-system/upload_file/{{master.id}}/" enctype="multipart/form-data" method="post">
 	    {% csrf_token %}
 	    <input type="file" name="file" required id="id_file" />
 	    <input type="submit" value="Submit" />
@@ -69,17 +74,17 @@
 
 	<hr>
 
-	<form action="/file-system/create_folder/{{master.pk}}/" method="post">
+	<form action="/file-system/create_folder/{{master.id}}/" method="post">
 	    {% csrf_token %}
 	    <input type="text" name="name" required id="id_name" maxlength="50" />
 	    <input type="submit" value="Submit" />
 	</form>
 {%elif mode == 1%}
-	{% if master.pk%}
-		<a href="/file-system/transfer/{{master.pk}}/">Submit Transfer</a>
+	{% if master.id%}
+		<a href="/file-system/transfer/{{master.id}}/">Submit Transfer</a>
 	{%else%}
 		<a href="/file-system/transfer/">Submit Transfer</a>
 	{%endif%}
 {%elif mode == 2%}
-	<a href="/file-system/test/submit/">Finish Test Compiling</a>
+	<a href="/file-system/test/submit/{{test_id}}">Finish Test Compiling</a>
 {%endif%}

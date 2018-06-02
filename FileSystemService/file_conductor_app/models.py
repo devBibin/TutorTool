@@ -3,12 +3,14 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 
 class FileSystem(models.Model):
-    master = models.ForeignKey(User)
+    master = models.IntegerField()
     creation_date = models.DateTimeField(default = timezone.now)
+    status = models.CharField(max_length=30, default="surfing")
+    temp_transfer_type = models.CharField(max_length=30, null=True, default=None)
+    temp_id = models.IntegerField(null=True, default=None)
     max_size = models.IntegerField(default = 500)
     cur_size = models.IntegerField(default = 0)
 

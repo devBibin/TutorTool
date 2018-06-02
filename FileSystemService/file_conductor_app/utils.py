@@ -18,3 +18,9 @@ def define_parent(parent_id):
         parent = None
         parent_str = ""    
     return parent, parent_str
+
+def get_user_id(request):
+    if (request.method == "GET"):
+        return request.GET.get("user")
+    elif (request.method == "POST"):
+        return request.POST.get("user")

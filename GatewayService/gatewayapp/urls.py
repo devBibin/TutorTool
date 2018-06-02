@@ -5,6 +5,8 @@ from . import views
 app_name = 'file_conductor_app'
 
 urlpatterns = [
+    url(r'^auth/$', views.index),
+
     url(r'^create/$', views.create_repo),
     
     url(r'^$', views.get_folder),
@@ -29,6 +31,7 @@ urlpatterns = [
     url(r'^test/submit/(?P<test_id>[0-9]+)/$', views.submit_test),
 
     url(r'^question/(?P<question_id>[0-9]+)/add/(?P<test_id>[0-9]+)/$', views.add_question_to_test),
+
     
     url(r'^transfer/(?P<object_type>[\w\-]+)/(?P<object_id>[0-9]+)/$', views.transfer_object),
     url(r'^transfer/$', views.submit_transfer),
