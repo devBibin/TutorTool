@@ -1,4 +1,4 @@
-"""GatewayService URL Configuration
+"""UserService URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -18,6 +18,5 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^file-system/', include('gatewayapp.urls')),
-    url(r'^user/', include('gatewayapp.urls')),
+    url(r'^user/', include('userapp.urls')),
 ]

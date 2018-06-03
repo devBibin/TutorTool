@@ -19,6 +19,7 @@ import os
 
 GATEWAY_URL = "http://localhost:8000"
 FILE_SYSTEM_URL = "http://localhost:8001"
+USER_URL = "http://localhost:8002"
 
 #==============================================================================
 #==========================TEMP FUNCTIONS======================================
@@ -26,37 +27,33 @@ def index(request):
     print user_auth(request)
     return render(request, 'gatewayapp/base.html')
 
+def login(request):
+    response = send_request(request, USER_URL)
+    return HttpResponse(response.content)
 
-def user_auth(request):
-    username = "foo"
-    password = "bar"
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            return True
-    else:
-        return False  
+def logout(request):
+    response = send_request(request, USER_URL)
+    return HttpResponse(response.content)
 #==============================================================================
 
 
 #==============================================================================
 #=======================CREATE REPOSITORY======================================
 def create_repo(request):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 #==============================================================================
 
 
 #==============================================================================
 #===============================FOLDER API=====================================
 def get_folder(request, folder_id=None):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 def create_folder(request, parent_id=None):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 def remove_folder(request, id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 #==============================================================================
 #==============================================================================
 
@@ -65,7 +62,7 @@ def remove_folder(request, id):
 #==============================================================================
 #=================================FILE API=====================================
 def upload_file(request, parent_id=None):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def download_file(request, id):
@@ -73,7 +70,7 @@ def download_file(request, id):
 
 
 def remove_file(request, id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 #==============================================================================
 #==============================================================================
 
@@ -85,13 +82,13 @@ def add_question(request):
     if (request.method == "GET"):
         return render(request, 'gatewayapp/question.html')
     elif (request.method == "POST"):
-        return system_navigation(request, "gatewayapp/file_system.html", "fs")
+        return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 def remove_question(request, id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 def get_question(request, question_id):
-    return system_navigation(request, "gatewayapp/question.html", "question")
+    return fs_system_navigation(request, "gatewayapp/question.html", "question")
 #==============================================================================
 
 
@@ -101,27 +98,27 @@ def add_test(request):
     if (request.method == "GET"):
         return render(request, 'gatewayapp/test.html')
     elif (request.method == "POST"):
-        return system_navigation(request, "gatewayapp/file_system.html", "fs")
+        return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def remove_test(request, id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def get_test(request, test_id):
-    return system_navigation(request, 'gatewayapp/test.html', "test")
+    return fs_system_navigation(request, 'gatewayapp/test.html', "test")
 
 
 def search_for_test(request, test_id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def submit_test(request, test_id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def add_question_to_test(request, question_id, test_id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")  
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")  
 #==============================================================================
 
 
@@ -129,11 +126,11 @@ def add_question_to_test(request, question_id, test_id):
 #==============================================================================
 #===========================TRANSFERING OBJECTS API============================
 def transfer_object(request, object_type, object_id):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 
 
 def submit_transfer(request, parent_id = None):
-    return system_navigation(request, "gatewayapp/file_system.html", "fs")
+    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
 #==============================================================================
 
 
@@ -155,15 +152,14 @@ def set_user_id(request):
     return request_data, request_files
 
 
-def send_request(request):
+def send_request(request, system):
     path = str(request.path)
     data, files = set_user_id(request)
     if (data):
         if (request.method == "POST"):
-            print data
-            response = requests.post(FILE_SYSTEM_URL + path, data = data, files = files)
+            response = requests.post(system + path, data = data, files = files)
         elif (request.method == "GET"):
-            response = requests.get(FILE_SYSTEM_URL + path, params = data)
+            response = requests.get(system + path, params = data)
         else:
             return False
     else:
@@ -172,7 +168,6 @@ def send_request(request):
 
 
 def get_dict_by_name(data, name):
-    print data
     if (name == "fs"):
         return {
          "dirs" : data["dirs"],
@@ -196,8 +191,8 @@ def get_dict_by_name(data, name):
         }
 
 
-def system_navigation(request, template_source, dict_name):
-    response = send_request(request)
+def fs_system_navigation(request, template_source, dict_name):
+    response = send_request(request, FILE_SYSTEM_URL)
     if (response.status_code == 200):
         if (dict_name == "fs" and response.content.find("Parent for redirect") != -1):
             s = response.content

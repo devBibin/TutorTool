@@ -2,10 +2,11 @@ from django.conf.urls import url
 
 from . import views
 
-app_name = 'file_conductor_app'
+app_name = 'gatewayapp'
 
 urlpatterns = [
-    url(r'^auth/$', views.index),
+    url(r'^login/$', views.login),
+    url(r'^logout/$', views.logout),
 
     url(r'^create/$', views.create_repo),
     

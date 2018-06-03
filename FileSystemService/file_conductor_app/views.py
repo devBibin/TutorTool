@@ -45,6 +45,7 @@ def create_repo(request):
 @csrf_exempt
 def get_folder(request, folder_id=None):
     # Get current user
+    print request.user
     user = get_user_id(request)     
     if (request.method == "GET"):
         # Get all info about current directory in current filesystem
