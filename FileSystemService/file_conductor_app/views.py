@@ -325,11 +325,9 @@ def get_test(request, test_id):
     user = get_user_id(request) 
     t = Test.objects.get(pk=test_id)
     qref = list(QuestionToTest.objects.filter(test = t).values())
-    print qref
     for i in range(len(qref)):
         q = Question.objects.get(pk = qref[i]["question_id"])
         qref[i]["question_id"] = model_to_dict(q)
-    print qref
     return JsonResponse({
         "test" : model_to_dict(t),
         "questions": qref,
