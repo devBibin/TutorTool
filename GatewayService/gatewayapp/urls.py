@@ -7,6 +7,9 @@ app_name = 'gatewayapp'
 urlpatterns = [
     url(r'^login/$', views.login),
     url(r'^logout/$', views.logout),
+    url(r'^verify/$', views.verify),
+    url(r'^refresh/$', views.refresh),
+
 
     url(r'^create/$', views.create_repo),
     
