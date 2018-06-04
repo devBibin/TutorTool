@@ -139,16 +139,8 @@ nav ul li a:hover {
     padding: 2%;
 }
 /*--------------------QUESTION.HTML---------------------*/
-.question_form {
-    display: flex;
-    flex-direction: column;
+.variantBox {
     border: 1px solid red;
-}
-
-.addVariant {
-    font-size: 16px;
-    font-family: "Montserrat-Light","Arial",sans-serif;
-    font-weight: 400; 
 }
 /*------------------------FILE_SYSTEM.HTML--------------*/
 

@@ -74,7 +74,7 @@
 
 	<hr>
 
-	{%if master.id%}
+		{%if master.id%}
 		<form action="/file-system/create_folder/{{master.id}}/" method="post">
 		    {% csrf_token %}
 		    <input type="text" name="name" required id="id_name" maxlength="50" />
@@ -87,6 +87,7 @@
 		    <input type="submit" value="Submit" />
 		</form>	
 	{%endif%}
+	
 {%elif mode == 1%}
 	{% if master.id%}
 		<a href="/file-system/transfer/{{master.id}}/">Submit Transfer</a>

@@ -1,42 +1,102 @@
-<form method="post">
-    {% csrf_token %}
-    <input type="text" name="name" value="{{question.name}}"/><br>
-    <input type="text" name="body" value="{{question.body}}" /><br>
-    <select name="answer_type" id="answer_type_id"><br>
-	    <option value="test">Тестовое</option><br>
-	    <option value="free_answer">Свободный ответ</option><br>
-	    <option value="file">Файл</option><br>
-   	</select><br>
-    <input type="text" name="choice1"><input type="checkbox" name="is_true1"><br>
-    <input type="text" name="choice2"><input type="checkbox" name="is_true2"><br>
-    <input type="text" name="choice3"><input type="checkbox" name="is_true3"><br>
-    <input type="text" name="choice4"><input type="checkbox" name="is_true4"><br>
-    <input type="text" name="choice5"><input type="checkbox" name="is_true5"><br>
-    <input type="text" name="choice6"><input type="checkbox" name="is_true6"><br>
-    <input type="text" name="choice7"><input type="checkbox" name="is_true7"><br>
-    <input type="text" name="choice8"><input type="checkbox" name="is_true8"><br>
-    <input type="text" name="choice9"><input type="checkbox" name="is_true9"><br>
-    <input type="text" name="choice10"><input type="checkbox" name="is_true10"><br>
-    <select name="rate" id="rate_id"><br>
-	    <option value="without_rate" >Без оценки</option><br>
-	    <option value="1">1</option><br>
-	    <option value="2">2</option><br>
-	    <option value="3">3</option><br>
-	    <option value="4">4</option><br>
-	    <option value="5">5</option><br>
-	    <option value="6">6</option><br>
-	    <option value="7">7</option><br>
-	    <option value="8">8</option><br>
-	    <option value="9">9</option><br>
-	    <option value="10">10</option><br>
-   	</select><br>
-    <input type="submit" value="Submit" />
-</form>
+
+    {% extends "gatewayapp/base.html" %} 
+   {% load static %}
+   {% include 'gatewayapp/style.css' %}
+<!--   {% include 'gatewayapp/fontawesome-all.min.css' %}-->
+    {% block content %}
+
+    <form method="post" class="form-group question_form">
+        {% csrf_token %}
+
+       <label for="quest_name">Название вопроса</label>
+        <input type="text" name="name" value="{{question.name}}" id="quest_name" class="form-control"/>
+        <label for="quest_body">Тело вопроса</label>
+        <input type="text" name="body" value="{{question.body}}" id="quest_body" class="form-control"/>
+        <label for="answer_type_id">Тип вопроса</label>
+        <select name="answer_type" id="answer_type_id" class="form-control">
+	    <option value="test">Тестовое</option>
+	    <option value="free_answer">Свободный ответ</option>
+	    <option value="file">Файл</option>
+   	</select>
+       <label for="variantBox">Варианты ответов</label>
+        <div id="variantBox" style="font-size: 0" >
+            <input type="text" name="choice1" class="form-control inputText"><input type="checkbox" name="is_true1" class="checkbox inputCheck">
+            <input type="text" name="choice2" class="form-control inputText"><input type="checkbox" name="is_true2" class="checkbox inputCheck">
+            <input type="text" name="choice3" class="form-control inputText"><input type="checkbox" name="is_true3" class="checkbox inputCheck">
+            <input type="text" name="choice4" class="form-control inputText"><input type="checkbox" name="is_true4" class="checkbox inputCheck">
+            <input type="text" name="choice5" class="form-control inputText"><input type="checkbox" name="is_true5" class="checkbox inputCheck">
+            <input type="text" name="choice6" class="form-control inputText"><input type="checkbox" name="is_true6" class="checkbox inputCheck">
+            <input type="text" name="choice7" class="form-control inputText"><input type="checkbox" name="is_true7" class="checkbox inputCheck">
+            <input type="text" name="choice8" class="form-control inputText"><input type="checkbox" name="is_true8" class="checkbox inputCheck">
+            <input type="text" name="choice9" class="form-control inputText"><input type="checkbox" name="is_true9" class="checkbox inputCheck">
+            <input type="text" name="choice10" class="form-control inputText"><input type="checkbox" name="is_true10" class="checkbox inputCheck">
+
+        </div>
+        <span id="addVariant" class="btn-sm btn-info" >Добавить новый вариант ответа</span>
+
+       <label for="rate_id">Баллы за ответ</label>
+        <select name="rate" id="rate_id" class="form-control">
+	    <option value="without_rate" >Без оценки</option>
+	    <option value="1">1</option>
+	    <option value="2">2</option>
+	    <option value="3">3</option>
+	    <option value="4">4</option>
+	    <option value="5">5</option>
+	    <option value="6">6</option>
+	    <option value="7">7</option>
+	    <option value="8">8</option>
+	    <option value="9">9</option>
+	    <option value="10">10</option>
+   	</select>
+        <input type="submit" value="Submit"  class="btn"/>
+    </form>
 
 
 <script type="text/javascript">
-	window.onload = function(){
-		document.getElementById('answer_type_id').value="{{question.answer_type}}";
-		document.getElementById('rate_id').value="{{question.rate}}";  
-	}
+    window.onload = function() {
+        if ("{{question.answer_type}}".length > 0) {
+            document.getElementById('answer_type_id').value = "{{question.answer_type}}";
+            document.getElementById('rate_id').value = "{{question.rate}}";
+        }
+
+        let inputsText = document.getElementsByClassName('inputText');
+        let maxText = 0;
+        for (let i = 0; i < inputsText.length; i++) {
+            if (i == 0) {
+                inputsText[0].style.display = "inline";
+                maxText = i;
+            } else {
+                inputsText[i].style.display = "none";
+            }
+        }
+
+        let inputsCheck = document.getElementsByClassName('inputCheck');
+        let maxCheck = 0;
+        for (let j = 0; j < inputsCheck.length; j++) {
+            if (j == 0) {
+                inputsCheck[0].style.display = "inline";
+                maxCheck = j;
+            } else {
+                inputsCheck[j].style.display = "none";
+            }
+        }
+
+
+        let tmp = 1;
+
+        let btn = document.getElementById('addVariant');
+        btn.addEventListener('click', newVariant);
+
+        function newVariant() {
+            if ((maxText < tmp) && (maxCheck < tmp)) {
+                inputsText[tmp].style.display = 'inline';
+                inputsCheck[tmp].style.display = 'inline';
+                maxText = tmp;
+                maxCheck = tmp;
+                tmp++;
+            }
+        }
+    }
+
 </script>
+{% endblock %}

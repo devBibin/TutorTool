@@ -1,27 +1,70 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Nagibator9000</title>
+
+<head>
+    <title>TutorTool</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     <!-- jQuery library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
     <!-- Latest compiled JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
     <!-- Custom styles for this template -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
-  </head>
-  <body>
-    <p>{{user}}</p>
-  </body>
+    <!-- Fontawesome fonts for this template   -->
+    <link rel="stylesheet" href="{% static 'web-fonts-with-css/css/fontawesome-all.min.css' %}">
+
+</head>
+
+<body>
+
+    <body>
+        <div class="wrap">
+            <header>
+                <div class="header_left">
+                    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#nav" >Menu</button>-->
+                </div>
+                <div class="header_right">
+                    <form action="" method="">
+                        <input type="submit" value="log out" class="btn btn-primary btn_logout" name="logout">
+                    </form>
+                </div>
+            </header>
+            <main>
+                <!--<nav id="nav" class="collapse">-->
+                <nav>
+                    <div class="logo"></div>
+                    <ul>
+                        <li><a href="#">Мои материалы</a></li>
+                        <li><a href="#">Мои занятия</a></li>
+                        <li><a href="#">Мои ученики</a></li>
+                        <li><a href="#">Мой профиль</a></li>
+                        <li><a href="#">Конструктор вопросов</a></li>
+                    </ul>
+                </nav>
+                <section class="mainSection">
+                    {% block content %}
+                    <!--	тело блока-->
+                    {% endblock %}
+                </section>
+            </main>
+        </div>
+        <footer></footer>
+
+
+    </body>
+
+</body>
+
 </html>
