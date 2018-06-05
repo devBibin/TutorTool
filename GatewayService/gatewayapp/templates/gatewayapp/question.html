@@ -1,41 +1,38 @@
+ {% extends "gatewayapp/base.html" %} {% load static %} 
 
-    {% extends "gatewayapp/base.html" %} 
-   {% load static %}
+{% block content %}
 
-<!--   {% include 'gatewayapp/fontawesome-all.min.css' %}-->
-    {% block content %}
+<form method="post" class="form-group constructor_form">
+    {% csrf_token %}
 
-    <form method="post" class="form-group question_form">
-        {% csrf_token %}
-
-       <label for="quest_name">Название вопроса</label>
-        <input type="text" name="name" value="{{question.name}}" id="quest_name" class="form-control"/>
-        <label for="quest_body">Тело вопроса</label>
-        <input type="text" name="body" value="{{question.body}}" id="quest_body" class="form-control"/>
-        <label for="answer_type_id">Тип вопроса</label>
-        <select name="answer_type" id="answer_type_id" class="form-control">
-	    <option value="test">Тестовое</option>
-	    <option value="free_answer">Свободный ответ</option>
-	    <option value="file">Файл</option>
+    <label for="quest_name">Название вопроса:</label>
+    <input type="text" name="name" value="{{question.name}}" id="quest_name" class="form-control" />
+    <label for="quest_body">Тело вопроса:</label>
+    <input type="text" name="body" value="{{question.body}}" id="quest_body" class="form-control" />
+    <label for="answer_type_id">Тип вопроса:</label>
+    <select name="answer_type" id="answer_type_id" class="form-control">
+	    <option value="test" selected="selected">Тестовое</option>
+	    <option value="free_answer" >Свободный ответ</option>
+	    <option value="file" >Файл</option>
    	</select>
-       <label for="variantBox">Варианты ответов</label>
-        <div id="variantBox" style="font-size: 0" >
-            <input type="text" name="choice1" class="form-control inputText"><input type="checkbox" name="is_true1" class="checkbox inputCheck">
-            <input type="text" name="choice2" class="form-control inputText"><input type="checkbox" name="is_true2" class="checkbox inputCheck">
-            <input type="text" name="choice3" class="form-control inputText"><input type="checkbox" name="is_true3" class="checkbox inputCheck">
-            <input type="text" name="choice4" class="form-control inputText"><input type="checkbox" name="is_true4" class="checkbox inputCheck">
-            <input type="text" name="choice5" class="form-control inputText"><input type="checkbox" name="is_true5" class="checkbox inputCheck">
-            <input type="text" name="choice6" class="form-control inputText"><input type="checkbox" name="is_true6" class="checkbox inputCheck">
-            <input type="text" name="choice7" class="form-control inputText"><input type="checkbox" name="is_true7" class="checkbox inputCheck">
-            <input type="text" name="choice8" class="form-control inputText"><input type="checkbox" name="is_true8" class="checkbox inputCheck">
-            <input type="text" name="choice9" class="form-control inputText"><input type="checkbox" name="is_true9" class="checkbox inputCheck">
-            <input type="text" name="choice10" class="form-control inputText"><input type="checkbox" name="is_true10" class="checkbox inputCheck">
+    <label for="variantBox">Варианты ответов:</label>
+    <div id="variantBox" style="font-size: 0">
+        <input type="text" name="choice1" class="form-control inputText"><input type="checkbox" name="is_true1" class="checkbox inputCheck">
+        <input type="text" name="choice2" class="form-control inputText"><input type="checkbox" name="is_true2" class="checkbox inputCheck">
+        <input type="text" name="choice3" class="form-control inputText"><input type="checkbox" name="is_true3" class="checkbox inputCheck">
+        <input type="text" name="choice4" class="form-control inputText"><input type="checkbox" name="is_true4" class="checkbox inputCheck">
+        <input type="text" name="choice5" class="form-control inputText"><input type="checkbox" name="is_true5" class="checkbox inputCheck">
+        <input type="text" name="choice6" class="form-control inputText"><input type="checkbox" name="is_true6" class="checkbox inputCheck">
+        <input type="text" name="choice7" class="form-control inputText"><input type="checkbox" name="is_true7" class="checkbox inputCheck">
+        <input type="text" name="choice8" class="form-control inputText"><input type="checkbox" name="is_true8" class="checkbox inputCheck">
+        <input type="text" name="choice9" class="form-control inputText"><input type="checkbox" name="is_true9" class="checkbox inputCheck">
+        <input type="text" name="choice10" class="form-control inputText"><input type="checkbox" name="is_true10" class="checkbox inputCheck">
 
-        </div>
-        <span id="addVariant" class="btn-sm btn-info" >Добавить новый вариант ответа</span>
+    </div>
+    <span id="addVariant" class="btn">Добавить вариант ответа</span>
 
-       <label for="rate_id">Баллы за ответ</label>
-        <select name="rate" id="rate_id" class="form-control">
+    <label for="rate_id">Баллы за ответ:</label>
+    <select name="rate" id="rate_id" class="form-control">
 	    <option value="without_rate" >Без оценки</option>
 	    <option value="1">1</option>
 	    <option value="2">2</option>
@@ -48,8 +45,8 @@
 	    <option value="9">9</option>
 	    <option value="10">10</option>
    	</select>
-        <input type="submit" value="Submit"  class="btn"/>
-    </form>
+    <input type="submit" value="Submit" class="btn btn-info btnForm" />
+</form>
 
 
 <script type="text/javascript">
@@ -63,7 +60,7 @@
         let maxText = 0;
         for (let i = 0; i < inputsText.length; i++) {
             if (i == 0) {
-                inputsText[0].style.display = "inline";
+                inputsText[0].style.display = "inline-block";
                 maxText = i;
             } else {
                 inputsText[i].style.display = "none";
@@ -74,7 +71,7 @@
         let maxCheck = 0;
         for (let j = 0; j < inputsCheck.length; j++) {
             if (j == 0) {
-                inputsCheck[0].style.display = "inline";
+                inputsCheck[0].style.display = "inline-block";
                 maxCheck = j;
             } else {
                 inputsCheck[j].style.display = "none";
@@ -89,13 +86,26 @@
 
         function newVariant() {
             if ((maxText < tmp) && (maxCheck < tmp)) {
-                inputsText[tmp].style.display = 'inline';
-                inputsCheck[tmp].style.display = 'inline';
+                inputsText[tmp].style.display = 'inline-block';
+                inputsCheck[tmp].style.display = 'inline-block';
                 maxText = tmp;
                 maxCheck = tmp;
                 tmp++;
             }
         }
+
+
+
+        document.getElementById('answer_type_id').onchange = function() {
+            if (this.value == "free_answer" || this.value == "file") {
+                document.getElementsByTagName('label')[3].style.display = "none";
+                document.getElementById("variantBox").style.display = "none";
+                document.getElementById('addVariant').style.display = "none";
+            }
+        };
+
+
+
     }
 
 </script>

@@ -4,6 +4,16 @@
     src: url('../fonts/Montserrat/Montserrat-Light.ttf');
 }
 
+@font-face {
+    font-family: Montserrat-Medium;
+    src: url('../fonts/Montserrat/Montserrat-Medium.ttf');
+}
+
+@font-face {
+    font-family: Montserrat-ExtraLight;
+    src: url('../fonts/Montserrat/Montserrat-ExtraLight.ttf');
+}
+
 
 html,
 body {
@@ -56,6 +66,12 @@ header {
     font-weight: 400;
 }
 
+.btn_logout {
+    font-size: 16px;
+    font-family: "Montserrat-Medium","Arial",sans-serif;
+    font-weight: 500;
+}
+
 /*---------------------main---------------------*/
 main {
     display: flex;
@@ -90,7 +106,6 @@ nav ul {
 }
 
 nav ul li {
-    color : red;
     list-style-type: none;
     display: block;
     width: 100%;
@@ -118,6 +133,8 @@ nav ul li a:hover {
     background-color: #eceff1;
     border-bottom: 2px solid #67daff;
     color: black;
+    font-family: "Montserrat-Medium","Arial",sans-serif;
+    font-weight: 500;
 }
 /*------------------------sections-------------------*/
 .mainSection {
@@ -129,19 +146,159 @@ nav ul li a:hover {
     padding: 2%;
 }
 /*--------------------QUESTION.HTML---------------------*/
-.question_form {
+.constructor_form {
     display: flex;
     flex-direction: column;
-    border: 1px solid red;
+    width: 60%;
 }
 
-.addVariant {
+.constructor_form label {
     font-size: 16px;
-    font-family: "Montserrat-Light","Arial",sans-serif;
+    font-family: "Montserrat-Medium","Arial",sans-serif;
+    font-weight: 500; 
+}
+.variantBox{
+    display:flex;
+    flex-wrap: wrap;
+}
+
+.constructor_form input,
+.constructor_form select,
+.constructor_form textarea{
+    margin-bottom:2%;
+}
+
+.inputText{
+    width: 95%;
+}
+
+.inputCheck {
+    width: 5%;
+}
+
+#addVariant,
+.addVariant{
+    font-size: 14px;
+    font-family: "Montserrat-ExtraLight","Arial",sans-serif;
     font-weight: 400; 
+    margin:1% 0% 2% 0%;
+    width:40%;
+    background-color: #4db6ac;
+    color: black;
+    text-decoration: none;
+}
+
+.btnForm{
+    width:20%;
+}
+
+.addVariantSmall {
+    width:10%;
+}
+
+#addVariant:hover,
+.addVariant:hover{
+    color: antiquewhite;
+    background-color: #00695c;
+}
+
+.existedQuest {
+    padding:1%;
+    color:black;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: "Montserrat-Medium","Arial",sans-serif;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom 200ms ease. background-color 200ms ease;
+    border-radius: 2%;
+}
+
+.existedQuest:hover {
+    border-bottom: 2px solid #9e9e9e;
+    background-color: #eeeeee;
+    text-decoration: none;
+    border-radius: 2%
 }
 /*------------------------FILE_SYSTEM.HTML--------------*/
+.file_system {
+    display:flex;
+    flex-direction: row;
+    width:50%;
+}
 
+.thead-light {
+    font-size: 16px;
+    font-family: "Montserrat-Light","Arial",sans-serif;
+    font-weight: 400;
+}
+
+.file_system_title {
+    font-size: 20px;
+    font-family: "Montserrat-Medium","Arial",sans-serif;
+    font-weight: 500;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+
+.newBox {
+    display: flex;
+    width: 100%;
+    
+}
+
+.collapseBox {
+    width: 45%;
+    margin-right: 2%;
+}
+
+.collapseBox p {
+    font-size: 16px;
+    font-family: "Montserrat-Light","Arial",sans-serif;
+    border-bottom: 1px solid #e0e0e0;
+    transition: color 300ms ease, border-bottom 300ms ease;
+}
+
+.collapseBox:hover p{
+    color: deepskyblue;
+    border-bottom: 1px solid deepskyblue;
+}
+
+.collapseBox form {
+    display: flex;
+    flex-direction: column;
+    padding: 1% 2%;
+    background-color: #e8eaf6;
+    border: 2px solid transparent;
+    border-radius: 3%;
+    width:100%;
+}
+
+.collapseBox label,
+.collapseBox input{
+    width:100%;
+}
+
+#id_name,
+#id_file {
+    border: 2px solid transparent;
+    border-radius: 2%;
+    margin: 1% 0;
+    transition: border 700ms ease;
+}
+
+
+#id_name:hover,
+#id_file:hover{
+    border: 2px solid  deepskyblue;
+    border-radius: 2%;
+}
+
+.collapseBox input[type=submit] {
+    margin: 1% 0;
+    width:20%;
+}
+/*
 
 .file-system {
     display: flex;
@@ -153,45 +310,16 @@ nav ul li a:hover {
     width: 100%;
 }
 
-.file-system tr:hover {
-    color: deepskyblue;
 
-}
 
-.newBox {
-    display: flex;
-    width: 100%;
-    
-}
 
-.collapseBox {
-    width: 30%;
-    margin-right: 2%;
-}
-
-.collapseBox p {
-    font-size: 16px;
-    font-family: "Montserrat-Light","Arial",sans-serif;
-    border: 1px solid black;
-}
-
-.collapseBox p:hover{
-    color: deepskyblue;
-}
 
 .collapseBox form{
     display: flex;
     flex-direction: column;
 }
 
-.collapseBox form {
-    display: flex;
-    flex-direction: column;
-    padding: 1% 2%;
-    background-color: #e8eaf6;
-    border: 2px solid transparent;
-    border-radius: 3%;
-}
+
 
 .collapseBox label,
 .collapseBox input{
@@ -199,25 +327,8 @@ nav ul li a:hover {
     width:100%;
 }
 
-#directory_name,
-#file_name {
-    border: 2px solid transparent;
-    border-radius: 2%;
-    margin: 1% 0;
-    transition: border 700ms ease;
-}
 
-
-#directory_name:hover,
-#file_name:hover{
-    border: 2px solid  deepskyblue;
-    border-radius: 2%;
-}
-
-.collapseBox input[type=submit] {
-    margin: 1% 0;
-    width:40%;
-}
+*/
 
 
 

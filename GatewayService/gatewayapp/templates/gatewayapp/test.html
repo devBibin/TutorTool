@@ -1,13 +1,58 @@
-<form method="post">
+ {% extends "gatewayapp/base.html" %} {% load static %} {% block content %}
+<form method="post" class="form-group constructor_form" id="formTest" >
     {% csrf_token %}
-    <input type="text" name="name" value="{{test.name}}"/><br>
-    <input type="text" name="description" value="{{test.description}}"/><br>
-    <input type="text" name="time" value="{{test.time}}"/><br>
-    {%if test%}
-    	{%for q in questions%}
-            <a href="/file-system/question/{{q.question_id.id}}/">{{q.q_index_in_test}}. {{q.question_id.name}}</a><br>
-    	{%endfor%}
-    	<a href="/file-system/test/{{test.id}}/add_questions/">Add more</a><br>
-    {%endif%}
-    <input type="submit" value="Submit" />
+    <label for="test_name">Название теста:</label>
+    <input type="text" name="name" value="{{test.name}}" class="form-control" id="test_name" />
+    <label for="test_desc">Описание теста:</label>
+    <textarea type="text" name="description" value="{{test.description}}" id="test_desc" class="form-control"></textarea>
+    <label for="test_time">Время:</label>
+    <input type="text" name="time" value="{{test.time}}" id="test_time" class="form-control" /> {%if test%} {%for q in questions%}
+    <label for="existedQuest">Ранее добавленные вопросы:</label>
+    <a href="/file-system/question/{{q.question_id.id}}/" id="existedQuest" class="existedQuest">{{q.q_index_in_test}}. {{q.question_id.name}}</a> {%endfor%}
+    <a href="/file-system/test/{{test.id}}/add_questions/" class="btn addVariant">Добавить еще вопросов</a> {%endif%}
+    <input type="submit" value="Submit" class="btn btn-info btnForm" id="btnValidTest"  onclick="checkForm(this,event)"/>
 </form>
+<script>
+    window.onload = function() {
+        let timeValid = /\b\d{1,3}\b/;
+//        
+//        document.getElementById('formTest').onload = init;
+//        function init(){
+//            let test_time = document.getElementById('test_time');
+//            test_time.addEventListener('keypress',checkForm, false);
+//        }
+           let key = false,
+//            btnValidTest = document.getElementById('btnValidTest');
+//        btnValidTest.addEventListener('click', checkForm);
+//        document.getElementById('formTest').onsubmit = checkForm;
+////        
+//
+               console.log(parseInt('hhjkh'));
+//        function checkForm() {
+//            if ((timeValid.test(document.getElementById('test_time').value)) === key) {
+//                event.preventDefault();
+//                document.getElementById('test_time').style.backgroundColor = "red";
+//                console.log('you suck');
+//                return false;
+//            }else{
+//                alert('fine');
+//                return true;
+//            };
+//
+//        }
+
+        //
+        //        document.getElementById('btnValidTest').addEventListener('click', check);
+        //
+        //        function check(e) {
+        //            If (timeValid.test(document.getElementById('test_time').value)) {
+        //                console.log('fine');
+        //            } else {
+        //                console.log('wrong');
+        //            }
+        //        };
+    };
+
+</script>
+
+{% endblock %}

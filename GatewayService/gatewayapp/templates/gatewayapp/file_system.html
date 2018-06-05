@@ -1,99 +1,158 @@
-<p>{{title}}</p>
+ {% extends "gatewayapp/base.html" %} {% load static %} 
+
+{% block content %}
+<h2 class="file_system_title">{{title}}</h2>
 
 {% if master.parent%}
-	<a href="/file-system/{{master.parent}}/">Back</a>
+	<a href="/file-system/{{master.parent}}/" class="btn addVariant addVariantSmall">Back</a>
 {%else%}
-	<a href="/file-system/">Back</a>
+	<a href="/file-system/" class="btn addVariant addVariantSmall">Back</a>
 {%endif%}
-<hr>
 
 
-{%for d in dirs%}
-	<a href="/file-system/{{d.id}}/">{{d.name}}</a>
-	{%if mode == 0%}
-		{%if d.can_be_deleted == True%}
-			|||<a href="/file-system/remove_folder/{{d.id}}/">delete</a>
-		{%endif%}
+ <table class="table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Название документа</th>
+                            <th>Тип документа</th>
+                            <th ></th>
+                            <th class="thead_title"></th>
+                            <th class="thead_title"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                           {%for d in dirs%}
+                            <td><a href="/file-system/{{d.id}}/">{{d.name}}</a></td>
+                            <td>dir</td>
+                            <td></td>
+                            {%if mode == 0%}
+		                        {%if d.can_be_deleted == True%}
+                            <td>
+                                <a href="/file-system/remove_folder/{{d.id}}/" class="btn btn-danger">Delete</a> 
+                            </td>
+                            {%endif%}
 		
-		{%if d.is_editable == True%}
-			|||<a href="/file-system/transfer/dir/{{d.id}}">transfer</a>
-		{%endif%}
-	{%endif%}
-	<br>
-{%endfor%}
-<hr>
+		                    {%if d.is_editable == True%}
+                            <td>
+                                <a href="/file-system/transfer/dir/{{d.id}}" class="btn btn-primary">Transfer</a>
+                            </td>
+                            {%endif%}
+	                    {%endif%}
+                        </tr> 
+                 {%endfor%}
+                    <tr>
+                           {%for f in files%}
+                            <td><a href="/file-system/download_file/{{f.id}}/">{{f.name}}</a></td>
+                            <td>file</td>
+                            <td></td>
+                            {%if mode == 0%}
+		                        {%if f.can_be_deleted == True%}
+                            <td>
+                                <a href="/file-system/remove_file/{{f.id}}/" class="btn btn-danger">Delete</a> 
+                            </td>
+                            {%endif%}
+                            
+                            
+                           {%if f.is_editable == True%}
+                            <td>
+                                <a href="/file-system/transfer/file/{{f.id}}" class="btn btn-primary">Transfer</a>
+                            </td>
+                            {%endif%}
+	                    {%endif%}
 
-
-{%for f in files%}
-	<a href="/file-system/download_file/{{f.id}}/">{{f.name}}</a>|||
-	{%if mode == 0%}
-		{%if f.can_be_deleted == True%}
-			<a href="/file-system/remove_file/{{f.id}}/">delete</a>|||
-		{%endif%}
-		
-		{%if f.is_editable == True%}
-			<a href="/file-system/transfer/file/{{f.id}}">transfer</a>
-		{%endif%}
-	{%endif%}
-	<br>
-{%endfor%}
-<hr>
-
-
-{%for t in tests%}
-	<a href="/file-system/test/{{t.id}}/">{{t.name}}</a>|||
-	{%if mode == 0%}
-		<a href="/file-system/remove_test/{{t.id}}">delete</a>|||
-		<a href="/file-system/transfer/test/{{t.id}}/">transfer</a>
-	{%endif%}
-	<br>
-{%endfor%}
-<hr>
-
-
-{%for q in questions%}
-	<a href="/file-system/question/{{q.id}}/">{{q.name}}</a>
-	{%if mode == 0%}
-		<a href="/file-system/remove_question/{{q.id}}">delete</a>|||
-		<a href="/file-system/transfer/question/{{q.id}}/">transfer</a>
-	{%endif%}
-
-	{%if mode == 2%}
-		|||<a href="/file-system/question/{{q.id}}/add/{{test_id}}/">Добавить</a>
-	{%endif%}
-	<br>
-{%endfor%}
-<hr>
-
-{%if mode == 0%}
-	<form action="/file-system/upload_file/{{master.id}}/" enctype="multipart/form-data" method="post">
-	    {% csrf_token %}
-	    <input type="file" name="file" required id="id_file" />
-	    <input type="submit" value="Submit" />
-	</form>
-
-	<hr>
-
-		{%if master.id%}
-		<form action="/file-system/create_folder/{{master.id}}/" method="post">
-		    {% csrf_token %}
-		    <input type="text" name="name" required id="id_name" maxlength="50" />
-		    <input type="submit" value="Submit" />
-		</form>
-	{%else%}
-		<form action="/file-system/create_folder/" method="post">
-		    {% csrf_token %}
-		    <input type="text" name="name" required id="id_name" maxlength="50" />
-		    <input type="submit" value="Submit" />
-		</form>	
-	{%endif%}
-	
-{%elif mode == 1%}
+                        </tr>
+            {%endfor%}
+                   <tr>
+                       
+                           {%for t in tests%}
+                            <td><a href="/file-system/test/{{t.id}}/">{{t.name}}</a></td>
+                             <td>test</td>
+                            <td></td>
+                            {%if mode == 0%}
+                            <td>
+                                <a href="/file-system/remove_test/{{t.id}}" class="btn btn-danger">Delete</a> 
+                            </td>
+                            <td>
+                                <a href="/file-system/transfer/test/{{t.id}}/" class="btn btn-primary">Transfer</a>
+                            </td>
+                            {%endif%}
+                       
+            {%endfor%}
+                   </tr>
+                   <tr>
+                          {%for q in questions%}
+                            <td><a href="/file-system/question/{{q.id}}/">{{q.name}}</a></td>
+                            <td>question</td>
+                            {%if mode == 2%}
+                            
+                            <td>
+                                <a href="/file-system/question/{{q.id}}/add/{{test_id}}/" class="btn btn-primary">Add</a> 
+                            </td>
+                            <script>
+                       window.onload = function(){
+                           let theadTitle = document.getElementsByClassName('thead_title');
+                           for (let i = 0; i< theadTitle.length; i++){
+                               theadTitle[i].style.display="none";
+                           }
+                       }
+                       </script>
+                            {%endif%}
+                            <td></td>
+                            {%if mode == 0%}
+                            <td>
+                                <a href="/file-system/remove_question/{{q.id}}" class="btn btn-danger">Delete</a> 
+                            </td>
+                            <td>
+                                <a href="/file-system/transfer/question/{{q.id}}/" class="btn btn-primary">Transfer</a>
+                            </td>
+                            {%endif%}
+                            
+                        </tr>
+            {%endfor%}
+                    </tbody>
+                </table>
+                
+                <div class="newBox">
+                    <div class="collapseBox">
+                        <p>Загрузить новый файл</p>
+                       {%if mode == 0%}
+                        <form action="/file-system/upload_file/{{master.id}}/" enctype="multipart/form-data" method="post" class="form-group constructor_form file_system">
+                            {% csrf_token %}
+                            <label for="id_file">Выберите файл:</label>
+                            <input type="file" name="file" required id="id_file" class="form-control"/>
+                            <input type="submit" value="Submit" class="btn btn-info"/>
+                        </form>
+                    </div>
+                    <div class="collapseBox">
+                        <p>Создать новую директорию</p>
+                        		{%if master.id%}
+                        <form action="/file-system/create_folder/{{master.id}}/" method="post" class="form-group">
+                            {% csrf_token %}
+                             <label for="id_name">Введите название директории:</label>
+                            <input type="text" name="name" required id="id_name" maxlength="50" class="form-control" />
+                            <input type="submit" value="Submit" class="btn btn-info"/>
+                        </form>
+                    {%else%}
+                        <form action="/file-system/create_folder/" method="post" class="form-group">
+                            {% csrf_token %}
+                             <label for="id_name">Введите название директории:</label>
+                            <input type="text" name="name" required id="id_name" maxlength="50" class="form-control" />
+                            <input type="submit" value="Submit" class="btn btn-info" />
+                        </form>	
+                    {%endif%}
+                    </div>
+                </div>
+                
+                {%elif mode == 1%}
 	{% if master.id%}
-		<a href="/file-system/transfer/{{master.id}}/">Submit Transfer</a>
+		<a href="/file-system/transfer/{{master.id}}/" class="btn btn-info btnForm">Submit Transfer</a>
 	{%else%}
-		<a href="/file-system/transfer/">Submit Transfer</a>
+		<a href="/file-system/transfer/" class="btn btn-info btnForm">Submit Transfer</a>
 	{%endif%}
 {%elif mode == 2%}
-	<a href="/file-system/test/submit/{{test_id}}">Finish Test Compiling</a>
+	<a href="/file-system/test/submit/{{test_id}}" class="btn addVariant">Finish Test Compiling</a>
 {%endif%}
+                
+{% endblock %}   
+
