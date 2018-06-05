@@ -23,11 +23,143 @@ log = logging.getLogger(__name__)
 GATEWAY_URL = "http://localhost:8000"
 FILE_SYSTEM_URL = "http://localhost:8001"
 USER_URL = "http://localhost:8002"
+LESSON_URL = "http://localhost:8003"
 
-#==============================================================================
-#==========================TEMP FUNCTIONS======================================
+
 def index(request):
     return render(request, 'gatewayapp/base.html')
+
+
+#==============================================================================
+#==============================================================================       
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==========================LESSON FUNCTIONS====================================
+def add_lesson(request, student_id):
+    data, files = get_request_data(request)
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+          
+        if (check_if_in_group(verify_info["user"]["groups"], "Teacher")):
+            if (has_relation(verify_info["user"]["id"], student_id)):
+                response = safe_send_request(LESSON_URL + "/lesson/add/"+str(verify_info["user"]["id"])+"/for/"+str(student_id)+"/", 
+                    {"info" : "helloworld"},
+                    "LessonService",
+                    "POST")
+                if (not without_error(response)):
+                    return HttpResponse(response["service_message"])
+                elif (response.status_code == 200):
+                    return HttpResponse(response.content)
+                elif (response.status_code == 400):
+                    return HttpResponse(response.content)
+                else:
+                    return HttpResponse("Unknown error")
+            else:
+                return HttpResponse("No active relation between student and teacher")
+        else:
+            return HttpResponse("Lessons can be added only by teachers")
+    else:
+        return HttpResponse(verify_info["service_message"])  
+
+
+def get_lessons(request, user_id = None):
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+        
+        
+        if (check_if_in_group(verify_info["user"]["groups"], "Teacher")):
+            if (user_id == None):
+                response = safe_send_request(LESSON_URL + "/lesson/get/"+str(verify_info["user"]["id"])+"/0/", 
+                    {},
+                    "LessonService",
+                    "POST")
+            else:
+                response = safe_send_request(LESSON_URL + "/lesson/get/"+str(verify_info["user"]["id"])+"/"+str(user_id)+"/",
+                    {},
+                    "LessonService",
+                    "POST") 
+        elif ((check_if_in_group(verify_info["user"]["groups"], "Student"))):
+            if (user_id == None):
+                response = safe_send_request(LESSON_URL + "/lesson/get/0/"+str(verify_info["user"]["id"])+"/", 
+                    {},
+                    "LessonService",
+                    "POST")
+            else:
+                response = safe_send_request(LESSON_URL + "/lesson/get/"+str(user_id)+"/"+str(verify_info["user"]["id"])+"/",
+                    {},
+                    "LessonService",
+                    "POST")
+        else:
+            return HttpResponse("Unknown user")                           
+        
+        if (not without_error(response)):
+            return HttpResponse(response["service_message"])
+        elif (response.status_code == 200):
+            return HttpResponse(response.content)
+        else:
+            return HttpResponse("Unknown error")
+    else:
+        return HttpResponse(verify_info["service_message"])  
+
+
+def add_homework_item(request, lesson_id, object_type, object_id):
+    data, files = get_request_data(request)
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+        
+        response = safe_send_request(LESSON_URL + "/lesson/"+object_type+"/"+str(object_id)+"/to/"+str(lesson_id)+"/", 
+            {"user" : verify_info["user"]["id"]},
+            "LessonService",
+            "POST")
+        
+        if (not without_error(response)):
+            return HttpResponse(response["service_message"])
+        elif (response.status_code == 200):
+            return HttpResponse(response.content)
+        elif (response.status_code == 400):
+            return HttpResponse("Forbidden")
+        else:
+            return HttpResponse("Unknown error")
+    else:
+        return HttpResponse(verify_info["service_message"])
+#==============================================================================
+#==============================================================================       
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==========================USER FUNCTIONS======================================
+def register(request):
+    data, files = get_request_data(request)
+    data = {"username" : "Master", "password" : "qaz", "group" : "Teacher"}
+    
+    # Send data for register
+    response = safe_send_request(USER_URL + "/user/register/", 
+        data,
+        "UserService",
+        "POST")    
+    if (not without_error(response)):
+        return HttpResponse(response["service_message"])
+    elif (response.status_code == 200):
+        if (data["group"] == "Teacher"):
+            # Creating repository for teacher
+            response = create_repo(request, response.content)
+            if (not without_error(response)):
+                return HttpResponse(response["service_message"])
+        # Login in case of success of register
+        return login(request)
+    elif (response.status_code == 400):
+        return HttpResponse("User exists")
 
 
 def logout(request):
@@ -37,19 +169,22 @@ def logout(request):
 
 
 def login(request):
+    data, files = get_request_data(request)
+    data = {"username" : "Student", "password" : "qaz"}
     response = safe_send_request(USER_URL + "/user/login/", 
-        {'username' : 'foo', 'password' : 'bar'},
+        data,
         "UserService",
         "POST")
     
     if (not without_error(response)):
-        return HttpResponse(response)
+        return HttpResponse(response["service_message"])
     elif (response.status_code == 200):
         data = json.loads(response.content)
         response = render(request, 'gatewayapp/base.html', {"user" : data["user"]["username"]})
         response.set_cookie(key='auth_token', value=data["token"])
         return response
     elif (response.status_code == 400):
+        print response.content
         return HttpResponse("Bad credentials")
     else:
         return HttpResponse("Unknown error")
@@ -80,18 +215,101 @@ def verify(request):
     if (not without_error(response)):
         return response
     elif (response.status_code == 200):
-        return response.content
+        return json.loads(response.content)
     elif (response.status_code == 400):
         return {"service_message" : "Login required"}
     else:
         return {"service_message" : "Unknown error"}
+
+
+def subscribe(request, teacher_id):
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+        
+        response = safe_send_request(USER_URL + "/user/subscribe/"+str(verify_info["user"]["id"])+"/to/"+str(teacher_id)+"/", 
+            {},
+            "UserService",
+            "POST")
+        if (without_error(response)):
+            return HttpResponse(response)
+        else:
+            return HttpResponse(response["service_message"])
+    else:
+        return HttpResponse(verify_info["service_message"])       
+
+
+def confirm(request, student_id):
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+        
+        response = safe_send_request(USER_URL + "/user/"+str(verify_info["user"]["id"])+"/confirm/"+str(student_id)+"/", 
+            {},
+            "UserService",
+            "POST")
+        if (without_error(response)):
+            return HttpResponse(response)
+        else:
+            return HttpResponse(response["service_message"])
+    else:
+        return HttpResponse(verify_info["service_message"])       
+
+
+def decline(request, student_id):
+    verify_info = verify(request)
+    if (without_error(verify_info)):
+        
+        response = safe_send_request(USER_URL + "/user/"+str(verify_info["user"]["id"])+"/decline/"+str(student_id)+"/", 
+            {},
+            "UserService",
+            "POST")
+        if (without_error(response)):
+            return HttpResponse(response)
+        else:
+            return HttpResponse(response["service_message"])
+    else:
+        return HttpResponse(verify_info["service_message"])  
+
+
+def get_info(request, user_id):
+    verify_info = verify(request)    
+    if (without_error(verify_info)):
+        response = safe_send_request(USER_URL + "/user/info/"+str(user_id)+"/", 
+            {},
+            "UserService",
+            "GET")
+        if (without_error(response)):
+            return HttpResponse(response.content)
+        else:
+            return HttpResponse(response["service_message"]) 
+    else:
+        return HttpResponse(verify_info["service_message"])
+
+
+def has_relation(teacher, student):
+    response = safe_send_request(USER_URL + "/user/"+str(teacher)+"/relation/"+str(student)+"/", 
+        {},
+        "UserService",
+        "POST")
+    if response.status_code == 200:
+        print "OK"
+        return True
+    else:
+        print "Not ok"
+        return False    
 #==============================================================================
 
 
 #==============================================================================
 #=======================CREATE REPOSITORY======================================
-def create_repo(request):
-    return fs_system_navigation(request, "gatewayapp/file_system.html", "fs")
+def create_repo(request, user_id):
+    response = safe_send_request(FILE_SYSTEM_URL + "/file-system/create/", 
+        {"user" : user_id},
+        "FileSystem",
+        "POST")
+    if (without_error(response)):
+        return HttpResponse("Repository was created")
+    else:
+        return response
 #==============================================================================
 
 
@@ -200,6 +418,13 @@ def without_error(data):
         return True
 
 
+def check_if_in_group(data, group):
+    for d in data:
+        if (d["name"] == group):
+            return True
+    return False
+
+
 # Get data from request
 def get_request_data(request):
     log.info("Get data from request")
@@ -222,12 +447,14 @@ def validate_user(request, request_data, group):
     
     # If error wasn't raised update request_data
     if (without_error(verify_info)):
-        verify_info = json.loads(verify_info)
-        # Set user id in request data
-        if (request.method == "POST"):
-            request_data["user"] = verify_info["user"]["id"]
-        elif (request.method == "GET"):
-            request_data["user"] = verify_info["user"]["id"]
+        if (check_if_in_group(verify_info["user"]["groups"], group)):
+            # Set user id in request data
+            if (request.method == "POST"):
+                request_data["user"] = verify_info["user"]["id"]
+            elif (request.method == "GET"):
+                request_data["user"] = verify_info["user"]["id"]
+        else:
+            return {"service_message" : "User is not of group " +str(group) +". Forbidden."}
         
         return request_data
     else:
@@ -245,7 +472,11 @@ def safe_send_request(url, data, system, request_type, files = None):
             return {"service_message" : "Unknown type of request"}
     except:
         return {"service_message" : "Service " + str(system) + " is unavailable"}
-    return response
+    
+    if (response.status_code != 500):
+        return response
+    else:
+        return {"service_message" : "My mistake. Contact please."}
 
 
 def send_request(request, system, system_name, auth_need = False, group = False):

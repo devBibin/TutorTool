@@ -4,6 +4,7 @@
     src: url('../fonts/Montserrat/Montserrat-Light.ttf');
 }
 
+
 html,
 body {
     height: 100%;
@@ -55,18 +56,6 @@ header {
     font-weight: 400;
 }
 
-
-/*.btn_logout {*/
-    /*background: url('../img/logout_sprites.png') no-repeat 0 0;*/
-    /*width: 50px;*/
-    /*height: 50px;*/
-    /*border: none;*/
-/*}*/
-
-/*.btn_logout:hover {*/
-    /*background: url('../img/logout_sprites.png') no-repeat -53px 0;*/
-/*}*/
-
 /*---------------------main---------------------*/
 main {
     display: flex;
@@ -101,6 +90,7 @@ nav ul {
 }
 
 nav ul li {
+    color : red;
     list-style-type: none;
     display: block;
     width: 100%;

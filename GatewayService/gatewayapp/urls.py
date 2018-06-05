@@ -5,13 +5,23 @@ from . import views
 app_name = 'gatewayapp'
 
 urlpatterns = [
+    url(r'^add/for/(?P<student_id>[0-9]+)/$', views.add_lesson),
+    url(r'^(?P<object_type>[\w\-]+)/(?P<object_id>[0-9]+)/to/(?P<lesson_id>[0-9]+)/$', views.add_homework_item),   
+    url(r'^get/(?P<user_id>[0-9]+)/$', views.get_lessons),
+    url(r'^get/$', views.get_lessons),
+
     url(r'^login/$', views.login),
     url(r'^logout/$', views.logout),
     url(r'^verify/$', views.verify),
     url(r'^refresh/$', views.refresh),
+    url(r'^register/$', views.register),
+    url(r'^info/(?P<user_id>[0-9]+)/$', views.get_info),
+    url(r'^subscribe/(?P<teacher_id>[0-9]+)/$', views.subscribe),
+    url(r'^confirm/(?P<student_id>[0-9]+)/$', views.confirm),
+    url(r'^decline/(?P<student_id>[0-9]+)/$', views.decline),
+    
 
 
-    url(r'^create/$', views.create_repo),
     
     url(r'^$', views.get_folder),
     url(r'^(?P<folder_id>[0-9]+)/$', views.get_folder),
